@@ -11,15 +11,19 @@ from ..tools import get_proxy_config
 from ..specific import get_keyring
 import os
 
-
+# change item to lower case
 def _nocase_lower(item):
     return unicode(item).lower()
 
-
+# access the system keyring service
+# specific.py
+# ref: https://pypi.python.org/pypi/keyring
 def set_auth_token(token):
     get_keyring().set_password('everpad', 'oauth_token', token)
 
-
+# access the system keyring service
+# specific.py
+# ref: https://pypi.python.org/pypi/keyring
 def get_auth_token():
     return get_keyring().get_password('everpad', 'oauth_token')
 
