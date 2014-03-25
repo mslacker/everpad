@@ -18,6 +18,7 @@ def get_launcher(*args, **kwargs):
     return launcher(*args, **kwargs)
 
 
+# Set the everpad icon based on session
 def get_tray_icon(is_black=False):
     if os.environ.get('DESKTOP_SESSION', 'default') == 'gnome':
         return QIcon.fromTheme('everpad', QIcon('../../data/everpad.png'))
