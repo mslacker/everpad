@@ -35,6 +35,7 @@ def get_auth_token():
     return get_keyring().get_password('everpad', 'oauth_token')
 
 # Setup database
+# Ref:  http://docs.sqlalchemy.org/en/rel_0_9/orm/tutorial.html
 def get_db_session(db_path=None):
     # DB_PATH defined in const.py
     if not db_path:
