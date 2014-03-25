@@ -12,18 +12,25 @@ from ..specific import get_keyring
 import os
 
 # change item to lower case
+# used local only
 def _nocase_lower(item):
     return unicode(item).lower()
 
 # access the system keyring service
-# specific.py
+# get_keyring() - specific.py
 # ref: https://pypi.python.org/pypi/keyring
+# set_password(service, username, password)
+# Store the password in the keyring.
+# Used local and agent.py - _init_network
 def set_auth_token(token):
     get_keyring().set_password('everpad', 'oauth_token', token)
 
 # access the system keyring service
-# specific.py
+# get_keyring() - specific.py
 # ref: https://pypi.python.org/pypi/keyring
+# get_keyring()
+# Return the currently-loaded keyring implementation.
+# Used local and agent.py - _init_network
 def get_auth_token():
     return get_keyring().get_password('everpad', 'oauth_token')
 
