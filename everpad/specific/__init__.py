@@ -3,6 +3,9 @@ from everpad.specific.unity.launcher import UnityLauncher
 import os
 
 
+# This seems to handle all desktop related differences 
+
+
 launchers = {
     'ubuntu': UnityLauncher,
     'default': UnityLauncher,
@@ -31,7 +34,7 @@ else:
     from PySide.QtCore import QCoreApplication
     AppClass = QCoreApplication
 
-
+# Handle keyring for Lubuntu and LXDE
 class QSettingsKeyringAdpdater(object):
     def __init__(self, settings):
         self._settings = settings
