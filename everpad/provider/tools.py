@@ -34,8 +34,9 @@ def set_auth_token(token):
 def get_auth_token():
     return get_keyring().get_password('everpad', 'oauth_token')
 
-
+# Setup database
 def get_db_session(db_path=None):
+    # DB_PATH defined in const.py
     if not db_path:
         db_path = os.path.expanduser(DB_PATH)
     engine = create_engine('sqlite:///%s' % db_path)
