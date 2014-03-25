@@ -11,7 +11,8 @@ launchers = {
     'default': UnityLauncher,
 }
 
-
+# I don't really get the launcher stuff. As I understand:
+#   os.environ.get(KEY_TO_GET, Default_return_if_KEY_None) 
 def get_launcher(*args, **kwargs):
     de = os.environ.get('DESKTOP_SESSION', 'default')
     launcher = launchers.get(de, launchers['default'])
