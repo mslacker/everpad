@@ -15,6 +15,7 @@ import argparse
 import sys
 import logging
 
+# Main everpad-provider file - started everpad-provider call to main( )
 
 class ProviderApp(AppClass):
 
@@ -118,5 +119,6 @@ def main():
     except Exception as e:
         app.logger.debug(e)
 
+# allows running daemon.py directly
 if __name__ == '__main__':
     main()
