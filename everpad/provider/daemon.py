@@ -109,7 +109,9 @@ def main():
     # create everpad directories - _create_dirs local
     _create_dirs(['~/.everpad/', '~/.everpad/data/', '~/.everpad/logs/'])
     
-    
+    # parse args using funky python built-in stuff
+    # {none}, verbose, or version
+    # ref: http://docs.python.org/2/howto/argparse.html
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', action='store_true', help='verbose output')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
