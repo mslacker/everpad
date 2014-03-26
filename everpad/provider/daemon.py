@@ -50,7 +50,8 @@ class ProviderApp(AppClass):
             self.on_remove_authenticated,
         )
         self.service.qobject.terminate.connect(self.terminate)
-        # Configure logger.
+        
+        # *****  Configure logger.
         self.logger = logging.getLogger('everpad-provider')
         self.logger.setLevel(logging.DEBUG)
         fh = logging.FileHandler(
