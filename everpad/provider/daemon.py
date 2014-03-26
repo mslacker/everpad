@@ -100,6 +100,10 @@ def _create_dirs(dirs):
 
 # kicks things off starting everpad-provider
 def main():
+    
+    # ctrl-c terminates the process gracefully
+    # http://docs.python.org/dev/library/signal.html
+    # http://pymotw.com/2/signal/
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     
     # create everpad directories - _create_dirs local
