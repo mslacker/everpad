@@ -6,7 +6,8 @@ from ..tools import print_version
 from . import models
 from PySide.QtCore import Slot, QSettings
 import dbus
-import dbus.mainloop.glib
+from dbus.mainloop.glib import DBusGMainLoop
+# import dbus.mainloop.glib
 import signal
 import fcntl
 import os
