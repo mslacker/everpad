@@ -127,6 +127,7 @@ def main():
         print_version()
     
     # lockfile using usr name getpass.getuser()
+    # start main loop or error out
     fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
