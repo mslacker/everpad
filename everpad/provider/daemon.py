@@ -24,9 +24,13 @@ class ProviderApp(AppClass):
         AppClass.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-provider')
         self.verbose = verbose
+
+
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
         self.service = ProviderService(session_bus, '/EverpadProvider')
+
+
         self.sync_thread = SyncThread()
         self.sync_thread.sync_state_changed.connect(
             Slot(int)(self.service.sync_state_changed),
