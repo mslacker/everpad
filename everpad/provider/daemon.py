@@ -98,7 +98,7 @@ def _create_dirs(dirs):
         except OSError:
             continue
 
-
+# kicks things off starting everpad-provider
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     
