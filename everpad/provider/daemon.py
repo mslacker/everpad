@@ -57,6 +57,7 @@ class ProviderApp(AppClass):
 
     @Slot(str)
     def on_authenticated(self, token):
+        # set_auth_token everpad/provider/tools.py 
         set_auth_token(token)
         self.sync_thread.start()
 
@@ -64,8 +65,11 @@ class ProviderApp(AppClass):
     def on_remove_authenticated(self):
         self.sync_thread.quit()
         self.sync_thread.update_count = 0
+
+        # get_db_sesson everpad/provider/tools.py
         set_auth_token('')
         session = get_db_session()
+        
         session.query(models.Note).delete(
             synchronize_session='fetch',
         )
