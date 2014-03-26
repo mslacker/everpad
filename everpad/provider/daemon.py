@@ -40,9 +40,12 @@ class ProviderApp(AppClass):
         )
         if get_auth_token():
             self.sync_thread.start()
+        
+        # on_authenticated @Slot
         self.service.qobject.authenticate_signal.connect(
             self.on_authenticated,
         )
+        # on_remove_authenticated @Slot
         self.service.qobject.remove_authenticate_signal.connect(
             self.on_remove_authenticated,
         )
