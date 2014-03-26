@@ -26,6 +26,7 @@ class ProviderApp(AppClass):
         self.verbose = verbose
 
         # Ref: http://excid3.com/blog/an-actually-decent-python-dbus-tutorial/
+        # SessionBus because service is a session level daemon
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
         self.service = ProviderService(session_bus, '/EverpadProvider')
