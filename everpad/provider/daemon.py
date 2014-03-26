@@ -89,7 +89,7 @@ class ProviderApp(AppClass):
         self.sync_thread.quit()
         self.quit()
 
-
+# creates everpad directories - called from main( )
 def _create_dirs(dirs):
     """Create everpad dirs"""
     for path in dirs:
