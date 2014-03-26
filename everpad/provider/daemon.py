@@ -25,7 +25,7 @@ class ProviderApp(AppClass):
         self.settings = QSettings('everpad', 'everpad-provider')
         self.verbose = verbose
 
-
+        # Ref: http://excid3.com/blog/an-actually-decent-python-dbus-tutorial/
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
         self.service = ProviderService(session_bus, '/EverpadProvider')
@@ -141,6 +141,10 @@ def main():
     fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # ref: http://dbus.freedesktop.org/doc/dbus-python/api/
+        # set_as_default is given and is true, set the new main 
+        # loop as the default for all new Connection or Bus instances
+        # allows this script to receive DBus calls
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         app = ProviderApp(args.verbose, sys.argv)
         app.exec_()
