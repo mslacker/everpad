@@ -101,13 +101,21 @@ def _create_dirs(dirs):
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+    
+    # create everpad directories - _create_dirs local
     _create_dirs(['~/.everpad/', '~/.everpad/data/', '~/.everpad/logs/'])
+    
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', action='store_true', help='verbose output')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
+    
+    # print version (tools.py) and exit. print_version executes sys.exit(0)
+    # after printing
     if args.version:
         print_version()
+
     fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
