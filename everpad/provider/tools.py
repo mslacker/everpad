@@ -53,8 +53,11 @@ def get_db_session(db_path=None):
 
 
 def get_user_store(auth_token=None):
+    
+    # Get token if don't have it already
     if not auth_token:
         auth_token = get_auth_token()
+        
     user_store_uri = "https://" + HOST + "/edam/user"
 
     user_store_http_client = THttpClient.THttpClient(user_store_uri,
@@ -64,8 +67,11 @@ def get_user_store(auth_token=None):
 
 
 def get_note_store(auth_token=None):
+    
+    # Get token if don't have it already
     if not auth_token:
         auth_token = get_auth_token()
+    
     user_store = get_user_store(auth_token)
     note_store_url = user_store.getNoteStoreUrl(auth_token)
     note_store_http_client = THttpClient.THttpClient(note_store_url,
