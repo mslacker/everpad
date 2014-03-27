@@ -71,6 +71,7 @@ class SyncThread(QtCore.QThread):
         """Init database"""
         self.session = tools.get_db_session()
 
+    # All in tools.py
     def _init_network(self):
         """Init connection to remote server"""
         while True:
