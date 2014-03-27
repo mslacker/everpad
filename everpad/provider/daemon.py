@@ -21,8 +21,13 @@ import logging
 class ProviderApp(AppClass):
 
     def __init__(self, verbose, *args, **kwargs):
+        
         AppClass.__init__(self, *args, **kwargs)
+        
+        # ref:  http://qt-project.org/doc/qt-4.8/qsettings.html
         self.settings = QSettings('everpad', 'everpad-provider')
+        
+        # debug output
         self.verbose = verbose
 
         # Ref: http://excid3.com/blog/an-actually-decent-python-dbus-tutorial/
