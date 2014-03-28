@@ -150,12 +150,16 @@ class SyncThread(QtCore.QThread):
     def local_changes(self):
         """Send local changes to evernote server"""
         self.app.log('Running local_changes()')
+
+        # Notebooks
         self.sync_state_changed.emit(const.SYNC_STATE_NOTEBOOKS_LOCAL)
         notebook.PushNotebook(*self._get_sync_args()).push()
 
+        # Tags
         self.sync_state_changed.emit(const.SYNC_STATE_TAGS_LOCAL)
         tag.PushTag(*self._get_sync_args()).push()
 
+        # Notes and Resources
         self.sync_state_changed.emit(const.SYNC_STATE_NOTES_LOCAL)
         note.PushNote(*self._get_sync_args()).push()
 
@@ -163,11 +167,15 @@ class SyncThread(QtCore.QThread):
     def remote_changes(self):
         """Receive remote changes from evernote"""
         self.app.log('Running remote_changes()')
+        
+        # Notebooks
         self.sync_state_changed.emit(const.SYNC_STATE_NOTEBOOKS_REMOTE)
         notebook.PullNotebook(*self._get_sync_args()).pull()
-
+        
+        # Tags
         self.sync_state_changed.emit(const.SYNC_STATE_TAGS_REMOTE)
         tag.PullTag(*self._get_sync_args()).pull()
 
+        # Notes and Resources
         self.sync_state_changed.emit(const.SYNC_STATE_NOTES_REMOTE)
         note.PullNote(*self._get_sync_args()).pull()
