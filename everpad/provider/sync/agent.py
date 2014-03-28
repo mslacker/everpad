@@ -146,6 +146,7 @@ class SyncThread(QtCore.QThread):
         """Get sync arguments"""
         return self.auth_token, self.session, self.note_store, self.user_store
 
+    # Send all changes to server (evernote) 
     def local_changes(self):
         """Send local changes to evernote server"""
         self.app.log('Running local_changes()')
@@ -158,6 +159,7 @@ class SyncThread(QtCore.QThread):
         self.sync_state_changed.emit(const.SYNC_STATE_NOTES_LOCAL)
         note.PushNote(*self._get_sync_args()).push()
 
+    # Get all changes from server (evernote) 
     def remote_changes(self):
         """Receive remote changes from evernote"""
         self.app.log('Running remote_changes()')
