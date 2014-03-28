@@ -163,6 +163,9 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     def pull(self):
         """Pull notes from remote server"""
+
+        # okay, so _get_all_notes uses a generator to yield each note
+        # one at a time - great leap for a python dummy such as myself
         for note_ttype in self._get_all_notes():
             self.app.log(
                 'Pulling note "%s" from remote server.' % note_ttype.title)
