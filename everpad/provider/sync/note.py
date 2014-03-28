@@ -198,8 +198,8 @@ class PullNote(BaseSync, ShareNoteMixin):
                 ), offset, limits.EDAM_USER_NOTES_MAX,
             )
 
-            # http://stackoverflow.com/questions/231767/
-            #         the-python-yield-keyword-explained
+            # https://www.jeffknupp.com/blog/2013/04/07/
+            #       improve-your-python-yield-and-generators-explained/
             # https://wiki.python.org/moin/Generators
             for note in note_list.notes:
                 yield note
