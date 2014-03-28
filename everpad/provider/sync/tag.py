@@ -8,6 +8,9 @@ from .. import models
 from .base import BaseSync
 import regex
 
+# ****** Contains:
+#        PushTag and Pulltag
+
 
 class PushTag(BaseSync):
     """Push tags to server"""
