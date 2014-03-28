@@ -185,6 +185,8 @@ class PullNote(BaseSync, ShareNoteMixin):
         """Iterate all notes"""
         offset = 0
 
+        # NoteList findNotes(string authenticationToken, NoteFilter filter, 
+        #                      i32 offset, i32 maxNotes)
         while True:
             note_list = self.note_store.findNotes(
                 self.auth_token, NoteFilter(
