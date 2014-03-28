@@ -188,6 +188,8 @@ class PullNote(BaseSync, ShareNoteMixin):
         # NoteList findNotes(string authenticationToken, NoteFilter filter, 
         #                      i32 offset, i32 maxNotes)
         # Ref: http://dev.evernote.com/doc/articles/searching_notes.php
+        #      http://dev.evernote.com/doc/reference/
+        #                 Limits.html#Const_EDAM_USER_NOTES_MAX
         while True:
             note_list = self.note_store.findNotes(
                 self.auth_token, NoteFilter(
@@ -199,9 +201,13 @@ class PullNote(BaseSync, ShareNoteMixin):
             for note in note_list.notes:
                 yield note
 
+            # inc offset
             offset = note_list.startIndex + len(note_list.notes)
+            
             if note_list.totalNotes - offset <= 0:
                 break
+        # end while True
+
 
     def _get_full_note(self, note_ttype):
         """Get full note"""
