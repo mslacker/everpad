@@ -200,6 +200,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
             # http://stackoverflow.com/questions/231767/
             #         the-python-yield-keyword-explained
+            # https://wiki.python.org/moin/Generators
             for note in note_list.notes:
                 yield note
 
