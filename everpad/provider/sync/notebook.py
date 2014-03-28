@@ -9,6 +9,10 @@ from .base import BaseSync
 import regex
 
 
+# ****** Contains:
+#        PushNotebook and PullNoteBook
+
+
 class PushNotebook(BaseSync):
     """Notebook sync"""
 
