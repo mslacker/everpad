@@ -176,6 +176,8 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note = self._update_note(note_ttype)
             except NoResultFound:
                 note = self._create_note(note_ttype)
+
+            # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
             self._check_sharing_information(note, note_ttype)
@@ -244,10 +246,15 @@ class PullNote(BaseSync, ShareNoteMixin):
         note_ttype = self._get_full_note(note_ttype)
 
         # note_ttype == Types.Note at this point
+        
+        # Put note into local database
         note = models.Note(guid=note_ttype.guid)
         note.from_api(note_ttype, self.session)
         self.session.add(note)
         self.session.commit()
+        
+        # Is note the models.py version at this point?
+        # why yes it is - confused yet?
         return note
 
     def _update_note(self, note_ttype):
