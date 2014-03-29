@@ -180,8 +180,11 @@ class PullNote(BaseSync, ShareNoteMixin):
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
+            # note_ttype == NoteMetadata
+            # set or unset sharing
             self._check_sharing_information(note, note_ttype)
-
+            
+            # Here is where we get the resources
             resource_ids = self._receive_resources(note, note_ttype)
             
             if resource_ids:
@@ -301,6 +304,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             synchronize_session='fetch')
         self.session.commit()
 
+    # Get note resources
+    # note is the note as defind in models.py
+    # note_ttype == NoteMetadata
     def _receive_resources(self, note, note_ttype):
         """Receive note resources"""
         resources_ids = []
@@ -335,6 +341,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         ).delete(synchronize_session='fetch')
         self.session.commit()
 
+    # Set (_share_note) or unset (_stop_sharing_note) sharing
     def _check_sharing_information(self, note, note_ttype):
         """Check actual sharing information"""
         if not (
