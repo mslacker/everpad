@@ -180,7 +180,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
-            # note_ttype == NoteMetadata
+            # note_ttype == Types.Note
             # set or unset sharing
             self._check_sharing_information(note, note_ttype)
             
