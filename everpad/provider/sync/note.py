@@ -306,7 +306,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     # Get note resources
     # note is the note as defind in models.py
-    # note_ttype == NoteMetadata
+    # note_ttype == Types.Note
     def _receive_resources(self, note, note_ttype):
         """Receive note resources"""
         resources_ids = []
