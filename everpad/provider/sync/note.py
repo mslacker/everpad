@@ -169,9 +169,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         for note_ttype in self._get_all_notes():
             
             # note_ttype == NoteMetadata
-            
             self.app.log(
                 'Pulling note "%s" from remote server.' % note_ttype.title)
+
             try:
                 note = self._update_note(note_ttype)
             except NoResultFound:
@@ -181,6 +181,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             self._check_sharing_information(note, note_ttype)
 
             resource_ids = self._receive_resources(note, note_ttype)
+            
             if resource_ids:
                 self._remove_resources(note, resource_ids)
 
@@ -227,6 +228,8 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     def _create_note(self, note_ttype):
         """Create new note"""
+        
+        # note_ttype == NoteMetadata at this point
         note_ttype = self._get_full_note(note_ttype)
 
         note = models.Note(guid=note_ttype.guid)
@@ -241,6 +244,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             models.Note.guid == note_ttype.guid,
         ).one()
 
+        # note_ttype == NoteMetadata at this point
         note_ttype = self._get_full_note(note_ttype)
 
         if note.updated < note_ttype.updated:
