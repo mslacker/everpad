@@ -218,9 +218,19 @@ class PullNote(BaseSync, ShareNoteMixin):
                 break
         # end while True
 
-
+    # Get the note and return it
     def _get_full_note(self, note_ttype):
         """Get full note"""
+        
+        # Types.Note getNote(string authenticationToken,
+        #           Types.Guid guid,
+        #           bool withContent,
+        #           bool withResourcesData,
+        #           bool withResourcesRecognition,
+        #           bool withResourcesAlternateData)
+        # NOTE!!! service will include the meta-data for each 
+        # resource in the note, but the binary contents of the resources 
+        # and their recognition data will be omitted
         return self.note_store.getNote(
             self.auth_token, note_ttype.guid,
             True, True, True, True,
@@ -230,8 +240,10 @@ class PullNote(BaseSync, ShareNoteMixin):
         """Create new note"""
         
         # note_ttype == NoteMetadata at this point
+        # returns Types.Note
         note_ttype = self._get_full_note(note_ttype)
 
+        # note_ttype == Types.Note at this point
         note = models.Note(guid=note_ttype.guid)
         note.from_api(note_ttype, self.session)
         self.session.add(note)
@@ -245,8 +257,10 @@ class PullNote(BaseSync, ShareNoteMixin):
         ).one()
 
         # note_ttype == NoteMetadata at this point
+        # returns Types.Note
         note_ttype = self._get_full_note(note_ttype)
 
+        # note_ttype == Types.Note at this point
         if note.updated < note_ttype.updated:
             if note.action == const.ACTION_CHANGE:
                 self._create_conflict(note, note_ttype)
