@@ -311,6 +311,8 @@ class PullNote(BaseSync, ShareNoteMixin):
         """Receive note resources"""
         resources_ids = []
 
+        # Update note resources in database and download or delete
+        # actual binary data?  See resource.from_api in models.py
         for resource_ttype in note_ttype.resources or []:
             try:
                 resource = self.session.query(models.Resource).filter(
