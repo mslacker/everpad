@@ -202,6 +202,16 @@ class PullNote(BaseSync, ShareNoteMixin):
         # Ref: http://dev.evernote.com/doc/articles/searching_notes.php
         #      http://dev.evernote.com/doc/reference/
         #                 Limits.html#Const_EDAM_USER_NOTES_MAX
+        
+        # Function: NoteStore.findNotes - DEPRECATED. Use findNotesMetadata
+        # NotesMetadataList findNotesMetadata(string authenticationToken,
+        #                            NoteFilter filter,
+        #                            i32 offset,
+        #                            i32 maxNotes,
+        #                            NotesMetadataResultSpec resultSpec)
+        # throws Errors.EDAMUserException, Errors.EDAMSystemException, Errors.
+        #        EDAMNotFoundException
+
         while True:
             note_list = self.note_store.findNotes(
                 self.auth_token, NoteFilter(
