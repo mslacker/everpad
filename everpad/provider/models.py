@@ -13,9 +13,10 @@ import dbus
 import socket
 
 
-# Above, the declarative_base() callable returns a new base class from 
+# The declarative_base() callable returns a new base class from 
 # which all mapped classes should inherit. When the class definition is 
 # completed, a new Table and mapper() will have been generated.
+# http://docs.sqlalchemy.org/en/rel_0_9/orm/extensions/declarative.html
 Base = declarative_base()
 
 
