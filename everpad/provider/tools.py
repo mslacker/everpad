@@ -36,6 +36,7 @@ def get_auth_token():
 
 # Setup database
 # Ref:  http://docs.sqlalchemy.org/en/rel_0_9/orm/tutorial.html
+#       http://pypix.com/tools-and-tips/essential-sqlalchemy/
 def get_db_session(db_path=None):
     # DB_PATH defined in const.py
     if not db_path:
