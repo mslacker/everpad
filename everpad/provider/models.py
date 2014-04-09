@@ -19,6 +19,8 @@ import socket
 # http://docs.sqlalchemy.org/en/rel_0_9/orm/extensions/declarative.html
 Base = declarative_base()
 
+# engine = create_engine('sqlite:///%s' % db_path)
+# in tools.py
 
 notetags_table = Table(
     'notetags', Base.metadata,
