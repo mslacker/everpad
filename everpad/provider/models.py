@@ -29,7 +29,8 @@ notetags_table = Table(
 )
 
 
-# Note ORM class 
+# *********************************************************
+# Note ORM class to save note specific data to the database
 class Note(Base):
     __tablename__ = 'notes'
     id = Column(Integer, primary_key=True)
@@ -150,27 +151,47 @@ class Note(Base):
     @share_url_dbus.setter
     def share_url_dbus(self, val):
         pass
-
+    
+    # stuff the database with the note values
+    # passed note and database session
     def from_api(self, note, session):
         """Fill data from api"""
+        
+        # handle note content 
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
             lambda txt, cur: txt + unicode(cur),
             soup.find('en-note').contents, u'',
         )
+        
+        # record stuffing ...
         self.title = note.title.decode('utf8')
         self.content = content
         self.created = note.created
         self.updated = note.updated
         self.action = const.ACTION_NONE
+        
+        # shouldn't there always be a notebook guid????
         if note.notebookGuid:
             self.notebook = session.query(Notebook).filter(
                 Notebook.guid == note.notebookGuid,
             ).one()
+            
+        # note tags    
         if note.tagGuids:
             self.tags = session.query(Tag).filter(
                 Tag.guid.in_(note.tagGuids),
             ).all()
+        
+        # handle places ....
+        #
+        # Allows the user to assign a human-readable location name associated with a note. Users 
+        # may assign values like 'Home' and 'Work'. Place names may also be populated with values 
+        # from geonames database (e.g., a restaurant name). Applications are encouraged to normalize
+        # values so that grouping values by place name provides a useful result. Applications MUST 
+        # NOT automatically add place name values based on geolocation without confirmation from the 
+        # user; that is, the value in this field should be more useful than a simple automated lookup 
+        # based on the note's latitude and longitude. 
         place_name = None
         if getattr(note, 'attributes'):
             if note.attributes.placeName:
@@ -191,7 +212,10 @@ class Note(Base):
                     pass
         if place_name:
             self.set_place(place_name, session)
-
+        
+        # end of stuffin :)
+        
+    # just a local to set places
     def set_place(self, name, session):
         try:
             place = session.query(Place).filter(
@@ -203,6 +227,8 @@ class Note(Base):
         self.place = place
 
 
+# *************************************************************
+# Notebook ORM class to save note specific data to the database
 class Notebook(Base):
     __tablename__ = 'notebooks'
     id = Column(Integer, primary_key=True)
