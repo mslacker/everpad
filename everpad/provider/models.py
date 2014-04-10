@@ -82,6 +82,11 @@ class Note(Base):
                     tags.append(tg)
         self.tags = tags
 
+    
+    # not real good with @property in python
+    # following are getters/setters
+    
+    # -- get/set note's notebook id
     @property
     def notebook_dbus(self):
         if self.notebook:
@@ -102,6 +107,7 @@ class Note(Base):
                 Notebook.default == True,
             ).one()
 
+    # -- get/set note's place
     @property
     def place_dbus(self):
         if self.place:
@@ -113,6 +119,7 @@ class Note(Base):
         if val:
             self.set_place(val, self.session)
 
+    # -- get/set note's notebook id
     @property
     def conflict_parent_dbus(self):
         if self.conflict_parent_id:
