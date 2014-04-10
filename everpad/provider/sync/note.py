@@ -217,6 +217,13 @@ class PullNote(BaseSync, ShareNoteMixin):
         # throws Errors.EDAMUserException, Errors.EDAMSystemException, Errors.
         #        EDAMNotFoundException
 
+        
+        # DEPRECATED. Use findNotesMetadata, but anyway what is going on here -
+        # findNotes from 0 (offset) to EDAM_USER_NOTES_MAX
+        # So this returns a NoteList - which here seems strange because it returns
+        # totalNotes :)  Anyway, note_list.notes is a list of Struct: Note for each
+        # note. 
+        
         while True:
             note_list = self.note_store.findNotes(
                 self.auth_token, NoteFilter(
