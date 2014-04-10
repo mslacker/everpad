@@ -12,6 +12,11 @@ import time
 import binascii
 
 
+
+# ****** Note:  BaseSync - Base class for sync - base.py
+
+
+
 class ShareNoteMixin(object):
     """Mixin with methods for sharing notes"""
 
