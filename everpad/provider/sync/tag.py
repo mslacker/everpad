@@ -81,18 +81,24 @@ class PullTag(BaseSync):
 
     def pull(self):
         """Pull tags from server"""
+        
+        # Function: NoteStore.listTags
+        # Struct: Tag
         for tag_ttype in self.note_store.listTags(self.auth_token):
+            
             self.app.log(
                 'Pulling tag "%s" from remote server.' % tag_ttype.name)
             try:
                 tag = self._update_tag(tag_ttype)
             except NoResultFound:
                 tag = self._create_tag(tag_ttype)
+                
             self._exists.append(tag.id)
 
         self.session.commit()
         self._remove_tags()
 
+    # new tag
     def _create_tag(self, tag_ttype):
         """Create tag from server"""
         tag = models.Tag(guid=tag_ttype.guid)
@@ -101,6 +107,7 @@ class PullTag(BaseSync):
         self.session.commit()
         return tag
 
+    # update tag
     def _update_tag(self, tag_ttype):
         """Update tag if exists"""
         tag = self.session.query(models.Tag).filter(
@@ -110,6 +117,7 @@ class PullTag(BaseSync):
             tag.from_api(tag_ttype)
         return tag
 
+    # remove tag
     def _remove_tags(self):
         """Remove not exist tags"""
         if self._exists:
