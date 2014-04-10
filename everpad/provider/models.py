@@ -29,6 +29,7 @@ notetags_table = Table(
 )
 
 
+# Note ORM class 
 class Note(Base):
     __tablename__ = 'notes'
     id = Column(Integer, primary_key=True)
