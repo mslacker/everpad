@@ -119,7 +119,7 @@ class Note(Base):
         if val:
             self.set_place(val, self.session)
 
-    # -- get/set note's notebook id
+    # -- get/set note's conflict parent id
     @property
     def conflict_parent_dbus(self):
         if self.conflict_parent_id:
@@ -130,6 +130,7 @@ class Note(Base):
     def conflict_parent_dbus(self, val):
         pass
 
+    # -- get/set note's conflict item???
     @property
     def conflict_items_dbus(self):
         return map(
@@ -143,6 +144,7 @@ class Note(Base):
     def conflict_items_dbus(self, val):
         pass
 
+    # -- get/set note's share date
     @property
     def share_date_dbus(self):
         return self.share_date or 0
@@ -151,6 +153,7 @@ class Note(Base):
     def share_date_dbus(self, val):
         pass
 
+    # -- get/set note's share url
     @property
     def share_url_dbus(self):
         return self.share_url or ''
