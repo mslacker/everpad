@@ -62,6 +62,12 @@ class Note(Base):
     share_status = Column(Integer, default=const.SHARE_NONE)
     share_url = Column(String)
 
+
+    # not real good with @property in python
+    # following are getters/setters
+
+
+    # -- get/set note's tags????
     @property
     def tags_dbus(self):
         return map(lambda tag: tag.name, self.tags)
@@ -82,10 +88,6 @@ class Note(Base):
                     tags.append(tg)
         self.tags = tags
 
-    
-    # not real good with @property in python
-    # following are getters/setters
-    
     # -- get/set note's notebook id
     @property
     def notebook_dbus(self):
