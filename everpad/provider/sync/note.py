@@ -16,7 +16,7 @@ import binascii
 # ****** Note:  BaseSync - Base class for sync - base.py
 
 
-
+# Used by PushNote(BaseSync, ShareNoteMixin)
 class ShareNoteMixin(object):
     """Mixin with methods for sharing notes"""
 
