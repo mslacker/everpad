@@ -239,6 +239,7 @@ class Note(Base):
 
 # *************************************************************
 # Notebook ORM class to save note specific data to the database
+#
 class Notebook(Base):
     __tablename__ = 'notebooks'
     id = Column(Integer, primary_key=True)
@@ -260,6 +261,7 @@ class Notebook(Base):
         if notebook.stack:
             self.stack = notebook.stack.decode('utf8')
 
+    # -- get/set notebook's stack date
     @property
     def stack_dbus(self):
         if self.stack:
@@ -271,6 +273,9 @@ class Notebook(Base):
         self.stack = val
 
 
+# *************************************************************
+# Notebook ORM class to save tag specific place data to 
+# the database
 class Tag(Base):
     __tablename__ = 'tags'
     id = Column(Integer, primary_key=True)
@@ -284,6 +289,9 @@ class Tag(Base):
         self.action = const.ACTION_NONE
 
 
+# *************************************************************
+# Notebook ORM class to save resource specific place data to 
+# the database
 class Resource(Base):
     __tablename__ = 'resources'
     id = Column(Integer, primary_key=True)
@@ -313,13 +321,16 @@ class Resource(Base):
         with open(self.file_path, 'w') as data:
             data.write(resource.data.body)
 
-
+# *************************************************************
+# Notebook ORM class to save note specific place data to the 
+# database
 class Place(Base):
     __tablename__ = 'places'
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
-
+# *************************************************************
+# Notebook ORM class to save sync specific data to the database
 class Sync(Base):
     __tablename__ = 'sync'
     id = Column(Integer, primary_key=True)
