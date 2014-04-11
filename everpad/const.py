@@ -1,3 +1,7 @@
+
+from evernote.edam.userstore import EDAM_VERSION_MAJOR, EDAM_VERSION_MINOR
+
+
 CONSUMER_KEY = 'nvbn-1422'
 CONSUMER_SECRET = 'c17c0979d0054310'
 HOST = 'www.evernote.com'
@@ -27,6 +31,7 @@ DEFAULT_INDICATOR_LAYOUT = [
     'create_note', 'pin_notes', 'notes', 'all_notes', 'sync',
 ]
 
+EDAM_VERSION = EDAM_VERSION_MAJOR + "." + EDAM_VERSION_MINOR
 SCHEMA_VERSION = 5
 API_VERSION = 6
 VERSION = '2.5'
