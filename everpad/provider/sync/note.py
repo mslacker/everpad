@@ -173,10 +173,10 @@ class PullNote(BaseSync, ShareNoteMixin):
         # one at a time - great leap for a python dummy such as myself
         for note_ttype in self._get_all_notes():
             
-            # note_ttype == NoteMetadata
             self.app.log(
                 'Pulling note "%s" from remote server.' % note_ttype.title)
 
+            # note_ttype is a Note structure of the note
             try:
                 note = self._update_note(note_ttype)
             except NoResultFound:
@@ -235,6 +235,11 @@ class PullNote(BaseSync, ShareNoteMixin):
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
             # https://wiki.python.org/moin/Generators
+            
+            # NoteStore.findNotes returns a NoteList structure as
+            # note_list.  note_list.notes is a list of Note structures
+            # from offset 0 to EDAM_USER_NOTES_MAX (?).  Each note is
+            # yielded (yield note) for create or update in pull()
             for note in note_list.notes:
                 yield note
 
@@ -263,6 +268,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             True, True, True, True,
         )
 
+    # note_ttype is Note structure that includes all metadata (attributes, 
+    # resources, etc.), but will not include the ENML content of the note 
+    # or the binary contents of any resources.
     def _create_note(self, note_ttype):
         """Create new note"""
         
@@ -273,8 +281,12 @@ class PullNote(BaseSync, ShareNoteMixin):
         # note_ttype == Types.Note at this point
         
         # Put note into local database
+        # ... create with guid
         note = models.Note(guid=note_ttype.guid)
+        # ... add other note information
         note.from_api(note_ttype, self.session)
+        
+        # ... commit note data
         self.session.add(note)
         self.session.commit()
         
@@ -282,6 +294,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         # why yes it is - confused yet?
         return note
 
+    # note_ttype is Note structure that includes all metadata (attributes, 
+    # resources, etc.), but will not include the ENML content of the note 
+    # or the binary contents of any resources.
     def _update_note(self, note_ttype):
         """Update changed note"""
         note = self.session.query(models.Note).filter(
