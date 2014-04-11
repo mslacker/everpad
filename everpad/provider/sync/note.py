@@ -16,6 +16,9 @@ import binascii
 # ****** Note:  BaseSync - Base class for sync - base.py
 
 
+# *************************************************
+# **************** ShareNoteMixin  ****************
+# *************************************************
 # Used by PushNote(BaseSync, ShareNoteMixin)
 class ShareNoteMixin(object):
     """Mixin with methods for sharing notes"""
@@ -47,6 +50,9 @@ class ShareNoteMixin(object):
         self.session.commit()
 
 
+# *************************************************
+# ****************    Push Note    ****************
+# *************************************************
 class PushNote(BaseSync, ShareNoteMixin):
     """Push note to remote server"""
 
@@ -159,6 +165,9 @@ class PushNote(BaseSync, ShareNoteMixin):
             self.session.delete(note)
 
 
+# *************************************************
+# ****************    Pull Note    ****************
+# *************************************************
 class PullNote(BaseSync, ShareNoteMixin):
     """Pull notes"""
 
@@ -198,6 +207,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         self.session.commit()
         self._remove_notes()
 
+
+    # **************** Get All Notes ****************
+    #
     def _get_all_notes(self):
         """Iterate all notes"""
         offset = 0
@@ -252,6 +264,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
 
     # **************** Get Full Note ****************
+    #
     # Get the note data from API and return it
     def _get_full_note(self, note_ttype):
         """Get full note"""
@@ -272,6 +285,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
 
     # **************** Create Note ****************
+    #
     # On entry note_ttype is Note structure that includes all metadata 
     # (attributes, resources, etc.), but will not include the ENML content 
     # of the note or the binary contents of any resources.
@@ -307,7 +321,10 @@ class PullNote(BaseSync, ShareNoteMixin):
         # why yes it is - confused yet?
         # does return note signal end of yield?
         return note
+        
 
+    # **************** Update Note****************
+    #
     # note_ttype is Note structure that includes all metadata (attributes, 
     # resources, etc.), but will not include the ENML content of the note 
     # or the binary contents of any resources.
@@ -335,7 +352,9 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note.from_api(note_ttype, self.session)
         return note
 
+    
     # **************** Create Conflict ****************
+    #
     def _create_conflict(self, note, note_ttype):
         """Create conflict note"""
         conflict_note = models.Note()
@@ -346,6 +365,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         self.session.add(conflict_note)
         self.session.commit()
 
+    
     # **************** Remove Note ****************
     def _remove_notes(self):
         """Remove not exists notes"""
@@ -363,6 +383,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             synchronize_session='fetch')
         self.session.commit()
 
+    
     # **************** Receive Resource ****************
     # note is the note as defind in models.py
     # note_ttype == Types.Note
@@ -394,7 +415,9 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         return resources_ids
 
+    
     # **************** Remove Resource ****************
+    #
     def _remove_resources(self, note, resources_ids):
         """Remove non exists resources"""
         self.session.query(models.Resource).filter(
@@ -403,7 +426,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         ).delete(synchronize_session='fetch')
         self.session.commit()
 
+    
     # **************** Check Sharing Info ****************
+    #
     # Set (_share_note) or unset (_stop_sharing_note) sharing
     def _check_sharing_information(self, note, note_ttype):
         """Check actual sharing information"""
