@@ -250,7 +250,9 @@ class PullNote(BaseSync, ShareNoteMixin):
                 break
         # end while True
 
-    # Get the note and return it
+
+    # **************** Get Full Note ****************
+    # Get the note data from API and return it
     def _get_full_note(self, note_ttype):
         """Get full note"""
         
@@ -268,19 +270,31 @@ class PullNote(BaseSync, ShareNoteMixin):
             True, True, True, True,
         )
 
-    # note_ttype is Note structure that includes all metadata (attributes, 
-    # resources, etc.), but will not include the ENML content of the note 
-    # or the binary contents of any resources.
+
+    # **************** Create Note ****************
+    # On entry note_ttype is Note structure that includes all metadata 
+    # (attributes, resources, etc.), but will not include the ENML content 
+    # of the note or the binary contents of any resources.
+    #
+    # _create_note pulls ENML content of the note and stores the note data
+    # in the database
     def _create_note(self, note_ttype):
         """Create new note"""
         
+        self.app.log("Create Note.")
+
         # returns Types.Note with Note content.
         # !!!! binary contents of the resources 
         # !!!! and their recognition data will be omitted
         note_ttype = self._get_full_note(note_ttype)
+        
+        # So now I understand the continued use of note_ttype
+        # if it gets to create then missing info is ADDED to 
+        # note_ttype ... less resources binary info
+        
 
         # Put note into local database
-        # ... create with guid
+        # ... create Note ORM with guid
         note = models.Note(guid=note_ttype.guid)
         # ... add other note information
         note.from_api(note_ttype, self.session)
@@ -291,6 +305,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         
         # Is note the models.py version at this point?
         # why yes it is - confused yet?
+        # does return note signal end of yield?
         return note
 
     # note_ttype is Note structure that includes all metadata (attributes, 
@@ -298,6 +313,9 @@ class PullNote(BaseSync, ShareNoteMixin):
     # or the binary contents of any resources.
     def _update_note(self, note_ttype):
         """Update changed note"""
+
+        self.app.log("Update Note.")
+
         note = self.session.query(models.Note).filter(
             models.Note.guid == note_ttype.guid,
         ).one()
@@ -307,7 +325,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         # or the binary contents of any resources.
         note_ttype = self._get_full_note(note_ttype)
 
-        # note_ttype == Types.Note at this point
+        # if note in database is older than evernote then check for 
+        # const.ACTION_CHANGE and create conflict if true or create note 
+        # if in database if ! const.ACTION_CHANGE
         if note.updated < note_ttype.updated:
             if note.action == const.ACTION_CHANGE:
                 self._create_conflict(note, note_ttype)
@@ -315,6 +335,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note.from_api(note_ttype, self.session)
         return note
 
+    # **************** Create Conflict ****************
     def _create_conflict(self, note, note_ttype):
         """Create conflict note"""
         conflict_note = models.Note()
@@ -325,6 +346,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         self.session.add(conflict_note)
         self.session.commit()
 
+    # **************** Remove Note ****************
     def _remove_notes(self):
         """Remove not exists notes"""
         if self._exists:
@@ -341,7 +363,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             synchronize_session='fetch')
         self.session.commit()
 
-    # Get note resources
+    # **************** Receive Resource ****************
     # note is the note as defind in models.py
     # note_ttype == Types.Note
     def _receive_resources(self, note, note_ttype):
@@ -372,6 +394,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         return resources_ids
 
+    # **************** Remove Resource ****************
     def _remove_resources(self, note, resources_ids):
         """Remove non exists resources"""
         self.session.query(models.Resource).filter(
@@ -380,6 +403,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         ).delete(synchronize_session='fetch')
         self.session.commit()
 
+    # **************** Check Sharing Info ****************
     # Set (_share_note) or unset (_stop_sharing_note) sharing
     def _check_sharing_information(self, note, note_ttype):
         """Check actual sharing information"""
