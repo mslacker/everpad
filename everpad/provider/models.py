@@ -315,13 +315,22 @@ class Resource(Base):
         self.action = const.ACTION_NONE
         self.mime = resource.mime.decode('utf8')
         path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)
-        try:
-            os.mkdir(path)
-        except OSError:
-            pass
+        
+        # MKG
+        # comment out below and add the following:
         self.file_path = prepare_file_path(path, self.file_name)
-        with open(self.file_path, 'w') as data:
-            data.write(resource.data.body)
+        
+#        try:
+#            os.mkdir(path)
+#        except OSError:
+#            pass
+#        self.file_path = prepare_file_path(path, self.file_name)
+#        with open(self.file_path, 'w') as data:
+#            data.write(resource.data.body)
+
+        # I could not get the resource saved - maybe a evernote API change?
+        # Anyway, I am just going to stuff info here and do the call back in note.py
+
 
 # *************************************************************
 # Notebook ORM class to save note specific place data to the 
