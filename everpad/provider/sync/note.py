@@ -284,6 +284,28 @@ class PullNote(BaseSync, ShareNoteMixin):
         )
 
 
+    # **************** Get Resource Data ****************
+    #
+    # Get the note data from API and return it
+    def _get_resource_data(self, resource):
+
+        """Get resource data"""
+        
+        # string getResourceData(
+        #         string authenticationToken,
+        #         Types.Guid guid)
+
+        self.app.log("Resource binary.")
+        
+        data_body = self.note_store.getResourceData(
+            self.auth_token, resource.guid)
+        
+        with open(resource.file_path, 'w') as data:
+            data.write(data_body)
+            
+        # if this works -- need some error coding
+        
+
     # **************** Create Note ****************
     #
     # On entry note_ttype is Note structure that includes all metadata 
@@ -385,6 +407,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     
     # **************** Receive Resource ****************
+    #
     # note is the note as defind in models.py
     # note_ttype == Types.Note
     def _receive_resources(self, note, note_ttype):
@@ -393,6 +416,14 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         # Update note resources in database and download or delete
         # actual binary data?  See resource.from_api in models.py
+        
+        
+        # So WTH is the [] for? Need to figure that one
+        # Anyway, try: looks in database for the resource guid, if
+        # not found fall though to except.  If in the database, append to the 
+        # list and check hash to verify the existing resource.  If the resource
+        # has changed then update database --- !!! I also need to download it again !!!!
+        # The except handles resources that do not exist.  
         for resource_ttype in note_ttype.resources or []:
             try:
                 resource = self.session.query(models.Resource).filter(
@@ -403,12 +434,18 @@ class PullNote(BaseSync, ShareNoteMixin):
                     resource_ttype.data.bodyHash,
                 ):
                     resource.from_api(resource_ttype)
+                    
+                    _get_resource_data(resource)
+                    
             except NoResultFound:
                 resource = models.Resource(
                     guid=resource_ttype.guid,
                     note_id=note.id,
                 )
                 resource.from_api(resource_ttype)
+                
+                _get_resource_data(resource)
+                
                 self.session.add(resource)
                 self.session.commit()
                 resources_ids.append(resource.id)
