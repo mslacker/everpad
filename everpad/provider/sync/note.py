@@ -274,12 +274,11 @@ class PullNote(BaseSync, ShareNoteMixin):
     def _create_note(self, note_ttype):
         """Create new note"""
         
-        # note_ttype == NoteMetadata at this point
-        # returns Types.Note
+        # returns Types.Note with Note content.
+        # !!!! binary contents of the resources 
+        # !!!! and their recognition data will be omitted
         note_ttype = self._get_full_note(note_ttype)
 
-        # note_ttype == Types.Note at this point
-        
         # Put note into local database
         # ... create with guid
         note = models.Note(guid=note_ttype.guid)
@@ -303,8 +302,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             models.Note.guid == note_ttype.guid,
         ).one()
 
-        # note_ttype == NoteMetadata at this point
-        # returns Types.Note
+        # note_ttype is Note structure that includes all metadata (attributes, 
+        # resources, etc.), but will not include the ENML content of the note 
+        # or the binary contents of any resources.
         note_ttype = self._get_full_note(note_ttype)
 
         # note_ttype == Types.Note at this point
