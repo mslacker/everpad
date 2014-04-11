@@ -316,20 +316,21 @@ class Resource(Base):
         self.mime = resource.mime.decode('utf8')
         path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)
         
-        # MKG
-        # comment out below and add the following:
+        # MKG - okay here is where my problem was - the resource binary
+        # had not been pulled - an API change?
+
+        # seems like a sound idea to just make the directory here and 
+        # pull/save the resource binary back in note.py
+        # Note to self:  Are empty data directories removed when 
+        # all resources are deleted? Is there a check?
+        try:
+            os.mkdir(path)
+        except OSError:
+            pass
         self.file_path = prepare_file_path(path, self.file_name)
-        
-#        try:
-#            os.mkdir(path)
-#        except OSError:
-#            pass
-#        self.file_path = prepare_file_path(path, self.file_name)
+
 #        with open(self.file_path, 'w') as data:
 #            data.write(resource.data.body)
-
-        # I could not get the resource saved - maybe a evernote API change?
-        # Anyway, I am just going to stuff info here and do the call back in note.py
 
 
 # *************************************************************
