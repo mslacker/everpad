@@ -236,6 +236,16 @@ class PullNote(BaseSync, ShareNoteMixin):
         # totalNotes :)  Anyway, note_list.notes is a list of Struct: Note for each
         # note. 
         
+        
+#        filter = note_store.NoteFilter()
+#        filter.order = ttypes.NoteSortOrder.UPDATED
+#        filter.ascending = False
+        
+#        spec = note_store.NotesMetadataResultSpec()
+#        spec 
+        
+#        findNotesMetadata(string authenticationToken, filter, offset, limits.EDAM_USER_NOTES_MAX, spec)
+        
         while True:
             note_list = self.note_store.findNotes(
                 self.auth_token, NoteFilter(
