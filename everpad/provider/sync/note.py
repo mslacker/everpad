@@ -297,8 +297,10 @@ class PullNote(BaseSync, ShareNoteMixin):
     # **************** Get Resource Data ****************
     #
     # Get the note data from API and return it
+    # MKG: Verified this works 12Apr14
+    # -- need some error coding
+    # 
     def _get_resource_data(self, resource):
-
         """Get resource data"""
         
         # string getResourceData(
@@ -313,8 +315,6 @@ class PullNote(BaseSync, ShareNoteMixin):
         with open(resource.file_path, 'w') as data:
             data.write(data_body)
             
-        # if this works -- need some error coding
-        
 
     # **************** Create Note ****************
     #
@@ -445,7 +445,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 ):
                     resource.from_api(resource_ttype)
                     
-                    _get_resource_data(resource)
+                    self._get_resource_data(resource)
                     
             except NoResultFound:
                 resource = models.Resource(
@@ -454,7 +454,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 )
                 resource.from_api(resource_ttype)
                 
-                _get_resource_data(resource)
+                self._get_resource_data(resource)
                 
                 self.session.add(resource)
                 self.session.commit()
