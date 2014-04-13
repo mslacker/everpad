@@ -1,3 +1,4 @@
+# evernote.edam.error.ttypes import EDAMUserException
 from PySide import QtCore
 from datetime import datetime
 from ... import const
@@ -87,6 +88,9 @@ class SyncThread(QtCore.QThread):
         """Check need for update notes"""
         self.app.log('Checking need for update notes.')
         # Try to update_count.
+        
+        # okay get a RATE_LIMIT_REACHED on an initial sync
+        # http://dev.evernote.com/doc/articles/rate_limits.php
         try:
             update_count = self.note_store.getSyncState(
                 self.auth_token).updateCount
@@ -117,6 +121,7 @@ class SyncThread(QtCore.QThread):
         """Do sync"""
         self.wait_condition.wakeAll()
 
+    # ******** check for a sync needed *********   
     def perform(self):
         """Perform all sync"""
         self.app.log("Performing sync")

@@ -1,7 +1,7 @@
 from functools import wraps, partial
 from BeautifulSoup import BeautifulSoup
 from HTMLParser import HTMLParser
-from everpad.const import API_VERSION, SCHEMA_VERSION, VERSION, 
+from everpad.const import API_VERSION, SCHEMA_VERSION, VERSION
 import dbus
 import re
 import sys
@@ -128,7 +128,7 @@ def print_version():
     print 'Everpad version: %s' % VERSION
     print 'API version: %d' % API_VERSION
     print 'Schema version: %d' % SCHEMA_VERSION
-    print 'EDAM version: %d' % EDAM_VERSION
+#    print 'EDAM version: %d' % EDAM_VERSION
     sys.exit(0)
 
 
