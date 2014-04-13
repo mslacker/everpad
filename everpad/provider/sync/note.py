@@ -307,7 +307,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         #         string authenticationToken,
         #         Types.Guid guid)
 
-        self.app.log("Resource binary.")
+        self.app.log("Resource binary %s." % resource.file_path)
         
         data_body = self.note_store.getResourceData(
             self.auth_token, resource.guid)
@@ -326,8 +326,6 @@ class PullNote(BaseSync, ShareNoteMixin):
     # in the database
     def _create_note(self, note_ttype):
         """Create new note"""
-        
-        self.app.log("Create Note.")
 
         # returns Types.Note with Note content.
         # !!!! binary contents of the resources 
@@ -362,8 +360,6 @@ class PullNote(BaseSync, ShareNoteMixin):
     # or the binary contents of any resources.
     def _update_note(self, note_ttype):
         """Update changed note"""
-
-        self.app.log("Update Note.")
 
         note = self.session.query(models.Note).filter(
             models.Note.guid == note_ttype.guid,
