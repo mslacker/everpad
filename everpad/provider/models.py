@@ -348,3 +348,5 @@ class Sync(Base):
     id = Column(Integer, primary_key=True)
     update_count = Column(Integer)
     last_sync = Column(Integer)
+    # MKG:  Think I am going to track rate limit here    
+    rate_limit = Column(Boolean)

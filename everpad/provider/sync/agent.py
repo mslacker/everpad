@@ -1,4 +1,4 @@
-# evernote.edam.error.ttypes import EDAMUserException
+from evernote.edam.error.ttypes import EDAMSystemException
 from PySide import QtCore
 from datetime import datetime
 from ... import const
@@ -24,10 +24,19 @@ class SyncThread(QtCore.QThread):
         self._init_timer()
         self._init_locks()
 
+    # ??? initial startup sync
     def _init_sync(self):
         """Init sync"""
+        
+        # set status         
         self.status = const.STATUS_NONE
+        
+        # get current datetime
+        # https://docs.python.org/2/library/datetime.html#datetime-objects
+        # consider time zone?         
         self.last_sync = datetime.now()
+        
+        # query Sync table
         self.sync_state = self.session.query(models.Sync).first()
         if not self.sync_state:
             self.sync_state = models.Sync(
@@ -56,23 +65,26 @@ class SyncThread(QtCore.QThread):
         if delay != const.SYNC_MANUAL:
             self.timer.start(delay)
 
+    # ************ main running loop ****************   
     def run(self):
         """Run thread"""
-        self._init_db()
-        self._init_network()
-        self._init_sync()
+        self._init_db()         # setup database
+        self._init_network()    # get evernote info
+        self._init_sync()       # setup Sync times 
         while True:
             self.mutex.lock()
             self.wait_condition.wait(self.mutex)
             self.perform()
             self.mutex.unlock()
             time.sleep(1)  # prevent cpu eating
+    # ********** end main running loop **************
 
+    # Setup database - tools.py    
     def _init_db(self):
         """Init database"""
         self.session = tools.get_db_session()
 
-    # All in tools.py
+    # Get get_auth_token get_note_store get_user_store - tools.py
     def _init_network(self):
         """Init connection to remote server"""
         while True:
@@ -94,6 +106,12 @@ class SyncThread(QtCore.QThread):
         try:
             update_count = self.note_store.getSyncState(
                 self.auth_token).updateCount
+
+        except EDAMSystemException, e:
+            if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                return False
+
         except socket.error, e:
             self.app.log(
                 "Couldn't connect to remote server. Got: %s" %
@@ -102,6 +120,7 @@ class SyncThread(QtCore.QThread):
             # everpad-provider won't lock up and can try to sync up in the
             # next run.
             return False
+            
         #XXX: matsubara probably innefficient as it does a SQL each time it
         # accesses the update_count attr?
         self.app.log("Local update count: %s Remote update count: %s" % (
@@ -124,7 +143,7 @@ class SyncThread(QtCore.QThread):
     # ******** check for a sync needed *********   
     def perform(self):
         """Perform all sync"""
-        self.app.log("Performing sync")
+        self.app.log("Performing sync perform( )")
         self.status = const.STATUS_SYNC
         self.last_sync = datetime.now()
         self.sync_state_changed.emit(const.SYNC_STATE_START)
