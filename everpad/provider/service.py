@@ -91,7 +91,9 @@ class ProviderServiceQObject(QObject):
     remove_authenticate_signal = Signal()
     terminate = Signal()
 
-
+# ********** DBUS Services/API *********
+#
+#
 class ProviderService(dbus.service.Object):
     """DBus service for provider"""
 
