@@ -18,6 +18,9 @@ import socket
 # http://srinikom.github.io/pyside-docs/PySide/QtCore/QThread.html
 class SyncThread(QtCore.QThread):
     """Sync notes with evernote thread"""
+    
+    # signals
+    # http://qt-project.org/wiki/Signals_and_Slots_in_PySide
     force_sync_signal = QtCore.Signal()
     sync_state_changed = QtCore.Signal(int)
     data_changed = QtCore.Signal()
