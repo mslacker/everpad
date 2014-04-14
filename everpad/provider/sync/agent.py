@@ -41,7 +41,7 @@ class SyncThread(QtCore.QThread):
 
 
     # *** Initialize Sync
-    # ??? initial startup sync
+    # Setup Sync table with values and set status
     def _init_sync(self):
         """Init sync"""
         
@@ -151,11 +151,13 @@ class SyncThread(QtCore.QThread):
             time.sleep(1)  # prevent cpu eating
     # ********** end main running loop **************
 
+    # *** Initialize Database
     # Setup database - tools.py    
     def _init_db(self):
         """Init database"""
         self.session = tools.get_db_session()
 
+    # Initialize Network
     # Get get_auth_token get_note_store get_user_store - tools.py
     def _init_network(self):
         """Init connection to remote server"""
@@ -167,6 +169,8 @@ class SyncThread(QtCore.QThread):
                 break
             except socket.error:
                 time.sleep(30)
+
+    # ********** Working Routines **********
 
     def _need_to_update(self):
         """Check need for update notes"""
