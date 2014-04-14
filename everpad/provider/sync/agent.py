@@ -53,11 +53,17 @@ class SyncThread(QtCore.QThread):
         # consider time zone?         
         self.last_sync = datetime.now()
         
-        # query Sync table
+        # query Sync table - Return the first result of this Query or None 
+        # if the result doesn’t contain any row.
         self.sync_state = self.session.query(models.Sync).first()
+
+        # if the query did not return a result, setup the sync table
+        # with update_count 0 and last_sync as current date/time
         if not self.sync_state:
             self.sync_state = models.Sync(
                 update_count=0, last_sync=self.last_sync)
+                
+            # update Sync table
             self.session.add(self.sync_state)
             self.session.commit()
 
