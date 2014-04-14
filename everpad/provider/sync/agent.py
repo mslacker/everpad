@@ -71,11 +71,20 @@ class SyncThread(QtCore.QThread):
         self._init_db()         # setup database
         self._init_network()    # get evernote info
         self._init_sync()       # setup Sync times 
+        
+        
+        # Deprecated since version 2.6: 
+        # The mutex module has been removed in Python 3.
         while True:
             self.mutex.lock()
             self.wait_condition.wait(self.mutex)
+            
+            # do sync ....
             self.perform()
+            
             self.mutex.unlock()
+            
+            # sleep 1 second
             time.sleep(1)  # prevent cpu eating
     # ********** end main running loop **************
 
