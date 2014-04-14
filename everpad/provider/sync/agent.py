@@ -85,10 +85,21 @@ class SyncThread(QtCore.QThread):
 
    # *** End Initialize Timer
 
+    # *** Initialize Locks
+    # PySide
+    # self.wait_condition and self.mutex
     def _init_locks(self):
         """Init locks"""
+        
+        # provides a condition variable for synchronizing threads
+        # http://srinikom.github.io/pyside-docs/PySide/QtCore/QWaitCondition.html
         self.wait_condition = QtCore.QWaitCondition()
+        
+        # class provides access serialization between threads
+        # http://srinikom.github.io/pyside-docs/PySide/QtCore/QMutex.html
         self.mutex = QtCore.QMutex()
+
+   # *** End Initialize Locks
 
     # *** Update Timer
     # Stop the timmer, Set the timer delay to user settings,
@@ -115,7 +126,9 @@ class SyncThread(QtCore.QThread):
             
    # *** End Update Timer
 
-    # ***** reimplement PySide.QtCore.QThread.run() *****   
+    # ***** reimplement PySide.QtCore.QThread.run() *****
+    #
+    # This is the main loop of the thread
     def run(self):
         """Run thread"""
         self._init_db()         # setup database
