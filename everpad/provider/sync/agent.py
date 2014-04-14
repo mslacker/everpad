@@ -11,6 +11,11 @@ import traceback
 import socket
 
 
+# ********** SyncThread **********
+# 
+# from daemon.py 
+# subclass PySide.QtCore.QThread and reimplement PySide.QtCore.QThread.run()
+# http://srinikom.github.io/pyside-docs/PySide/QtCore/QThread.html
 class SyncThread(QtCore.QThread):
     """Sync notes with evernote thread"""
     force_sync_signal = QtCore.Signal()
@@ -20,10 +25,19 @@ class SyncThread(QtCore.QThread):
     def __init__(self, *args, **kwargs):
         """Init default values"""
         QtCore.QThread.__init__(self, *args, **kwargs)
+        
+        # non - KDE
+        # from PySide.QtCore import QCoreApplication
+        # Class = QCoreApplication
+        # http://srinikom.github.io/pyside-docs/PySide/QtCore/QCoreApplication.html
         self.app = AppClass.instance()
+        # setup timer
         self._init_timer()
+        # 
         self._init_locks()
 
+
+    # *** Initialize Sync
     # ??? initial startup sync
     def _init_sync(self):
         """Init sync"""
@@ -44,28 +58,55 @@ class SyncThread(QtCore.QThread):
             self.session.add(self.sync_state)
             self.session.commit()
 
+    # *** Initialize Timer
+    # Initialize timer, connect to sync signal, set delay,
+    # and start timer.
+    # http://qt-project.org/doc/qt-4.8/qtimer.html
     def _init_timer(self):
         """Init timer"""
+        
+        # Constructs a timer
         self.timer = QtCore.QTimer()
+        
+        # This signal is emitted when the timer times out - sync
         self.timer.timeout.connect(self.sync)
+        
+        # call update_timer to set time and start
         self.update_timer()
+
+   # *** End Initialize Timer
 
     def _init_locks(self):
         """Init locks"""
         self.wait_condition = QtCore.QWaitCondition()
         self.mutex = QtCore.QMutex()
 
+    # *** Update Timer
+    # Stop the timmer, Set the timer delay to user settings,
+    # default value, or nothing if manual. Finally, start the timer.
     def update_timer(self):
         """Update sync timer"""
+        
+        # stop timer
         self.timer.stop()
+        
+        # initial value of timer from settings
         delay = int(self.app.settings.value('sync_delay') or 0)
+        
+        # if no delay has been set in the settings then use
+        # the default -  DEFAULT_SYNC_DELAY = 30000 * 60
+        # WOW - that is a big default delay
         if not delay:
             delay = const.DEFAULT_SYNC_DELAY
 
+        # if delay is not set to manual - SYNC_MANUAL = -1
+        # then start the timer
         if delay != const.SYNC_MANUAL:
             self.timer.start(delay)
+            
+   # *** End Update Timer
 
-    # ************ main running loop ****************   
+    # ***** reimplement PySide.QtCore.QThread.run() *****   
     def run(self):
         """Run thread"""
         self._init_db()         # setup database
