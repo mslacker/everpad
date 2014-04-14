@@ -120,7 +120,7 @@ class SyncThread(QtCore.QThread):
         """Run thread"""
         self._init_db()         # setup database
         self._init_network()    # get evernote info
-        self._init_sync()       # setup Sync times 
+        self._init_sync()       # setup Sync table times 
         
         
         # Deprecated since version 2.6: 
