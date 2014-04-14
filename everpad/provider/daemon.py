@@ -37,13 +37,18 @@ class ProviderApp(AppClass):
         self.service = ProviderService(session_bus, '/EverpadProvider')
 
 
+        # subclass PySide.QtCore.QThread  - agent.py
+        # setup Sync thread
         self.sync_thread = SyncThread()
+
         self.sync_thread.sync_state_changed.connect(
             Slot(int)(self.service.sync_state_changed),
         )
+
         self.sync_thread.data_changed.connect(
             Slot()(self.service.data_changed),
         )
+        
         if get_auth_token():
             self.sync_thread.start()
         
