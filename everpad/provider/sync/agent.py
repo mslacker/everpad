@@ -36,7 +36,7 @@ class SyncThread(QtCore.QThread):
         self.app = AppClass.instance()
         # setup timer
         self._init_timer()
-        # 
+        # setup wait_condition and mutex
         self._init_locks()
 
 
