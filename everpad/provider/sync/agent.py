@@ -203,7 +203,8 @@ class SyncThread(QtCore.QThread):
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                 self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
                 self.sync_state.rate_limit = e.rateLimitDuration
-                self.sync_state.rate_limit_time = datetime.now()
+                self.sync_state.rate_limit_time = datetime.now() + 
+                    datetime.timedelta(seconds=e.rateLimitDuration)
                 return False
 
         except socket.error, e:
