@@ -25,6 +25,11 @@ class ProviderApp(AppClass):
         AppClass.__init__(self, *args, **kwargs)
         
         # ref:  http://qt-project.org/doc/qt-4.8/qsettings.html
+        #
+        # For example, if your product is called Star Runner and your company 
+        # is called MySoft, you would construct the QSettings object as follows:
+        #     QSettings settings("MySoft", "Star Runner");
+        #  Backwards?
         self.settings = QSettings('everpad', 'everpad-provider')
         
         # debug output
