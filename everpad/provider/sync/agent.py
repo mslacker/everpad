@@ -64,9 +64,8 @@ class SyncThread(QtCore.QThread):
             self.sync_state = models.Sync(
                 update_count=0, 
                 last_sync=self.last_sync,
-                rate_limit=false,
-                rate_limit_time=0,
-                rate_limit_happened=0)
+                rate_limit=0,
+                rate_limit_time=0)
                 
             # update Sync table
             self.session.add(self.sync_state)
