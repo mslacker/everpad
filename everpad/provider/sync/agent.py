@@ -183,6 +183,11 @@ class SyncThread(QtCore.QThread):
         
         # okay get a RATE_LIMIT_REACHED on an initial sync
         # http://dev.evernote.com/doc/articles/rate_limits.php
+        # getSyncState - updateCount -The total number of updates that have been 
+        # performed in the service for this account. This is equal to the 
+        # highest USN within the account at the point that this SyncChunk was 
+        # generated. If updateCount and chunkHighUSN are identical, that means 
+        # that this is the last chunk in the account ... there is no more recent information. 
         try:
             update_count = self.note_store.getSyncState(
                 self.auth_token).updateCount
@@ -190,8 +195,8 @@ class SyncThread(QtCore.QThread):
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                 self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
-                self.rate_limit = e.rateLimitDuration
-                self.rate_limit_time = datetime.now()
+                self.sync_state.rate_limit = e.rateLimitDuration
+                self.sync_state.rate_limit_time = datetime.now()
                 return False
 
         except socket.error, e:
@@ -203,14 +208,20 @@ class SyncThread(QtCore.QThread):
             # next run.
             return False
             
+        # Remember - don't get here if there was a problem
+        
         #XXX: matsubara probably innefficient as it does a SQL each time it
         # accesses the update_count attr?
-        self.app.log("Local update count: %s Remote update count: %s" % (
-            self.sync_state.update_count, update_count))
+        self.app.log("Local account updates count:  %s" % self.sync_state.update_count)
+        self.app.log("Remote account updates count: %s" % update_count)
+
+        # true if an update and false if no update needed
         reason = update_count != self.sync_state.update_count
         self.sync_state.update_count = update_count
         return reason
 
+    
+    # *** Force Sync ***
     def force_sync(self):
         """Start sync"""
         self.timer.stop()
