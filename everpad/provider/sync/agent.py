@@ -216,12 +216,20 @@ class SyncThread(QtCore.QThread):
         """Do sync"""
         self.wait_condition.wakeAll()
 
-    # ******** check for a sync needed *********   
+
+    # ******** Perform Sync Operations Local and Remote *********
+    #
     def perform(self):
         """Perform all sync"""
         self.app.log("Performing sync perform( )")
+        
+        # set status to sync
         self.status = const.STATUS_SYNC
+        
+        # get date/time to set new late sync value
         self.last_sync = datetime.now()
+        
+        # ??? Tell the world we are start sync
         self.sync_state_changed.emit(const.SYNC_STATE_START)
 
         need_to_update = self._need_to_update()
@@ -242,10 +250,13 @@ class SyncThread(QtCore.QThread):
         self.data_changed.emit()
         self.app.log("Sync performed.")
 
+    # ******** Sync Args *********
+    # get sync args for local_changes and remote_changes
     def _get_sync_args(self):
         """Get sync arguments"""
         return self.auth_token, self.session, self.note_store, self.user_store
 
+    # ******** Process Local Changes *********
     # Send all changes to server (evernote) 
     def local_changes(self):
         """Send local changes to evernote server"""
@@ -263,6 +274,7 @@ class SyncThread(QtCore.QThread):
         self.sync_state_changed.emit(const.SYNC_STATE_NOTES_LOCAL)
         note.PushNote(*self._get_sync_args()).push()
 
+    # ******** Process Remote Changes *********
     # Get all changes from server (evernote) 
     def remote_changes(self):
         """Receive remote changes from evernote"""
