@@ -207,9 +207,13 @@ class SyncThread(QtCore.QThread):
                 return False
 
         except socket.error, e:
+            # MKG: I want to track connect errors
+            self.sync_state.connect_error_count+=1
             self.app.log(
                 "Couldn't connect to remote server. Got: %s" %
                 traceback.format_exc())
+            self.app.log(
+                "Total connect errors: %d" % self.sync_state.connect_error_count)
             # This is most likely a network failure. Return False so
             # everpad-provider won't lock up and can try to sync up in the
             # next run.
