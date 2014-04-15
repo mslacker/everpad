@@ -351,5 +351,6 @@ class Sync(Base):
     # MKG:  Think I am going to track rate limit here    
     rate_limit = Column(Integer)
     rate_limit_time = Column(Integer)
+    connect_error_count = Column(Integer)
  
 
