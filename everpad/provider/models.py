@@ -349,9 +349,7 @@ class Sync(Base):
     update_count = Column(Integer)
     last_sync = Column(Integer)
     # MKG:  Think I am going to track rate limit here    
-    rate_limit = Column(Boolean)
+    rate_limit = Column(Integer)
     rate_limit_time = Column(Integer)
-    rate_limit_happened = Column(Integer)
-    
-
+ 
 
