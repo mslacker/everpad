@@ -65,10 +65,17 @@ class SyncThread(QtCore.QThread):
                 update_count=0, 
                 last_sync=self.last_sync,
                 rate_limit=0,
-                rate_limit_time=0)
+                rate_limit_time=0,
+                connect_error_count=0)
                 
             # update Sync table
             self.session.add(self.sync_state)
+            self.session.commit()
+        elif:
+            # MKG: zero my play values
+            self.sync_state.rate_limit=0
+            self.sync_state.rate_limit_time=0
+            self.sync_state.connect_error_count=0
             self.session.commit()
 
     # *** Initialize Timer
