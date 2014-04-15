@@ -191,6 +191,8 @@ class SyncThread(QtCore.QThread):
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                 self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                self.rate_limit = e.rateLimitDuration
+                self.rate_limit_time = datetime.now()
                 return False
 
         except socket.error, e:
