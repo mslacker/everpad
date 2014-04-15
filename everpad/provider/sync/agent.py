@@ -59,9 +59,14 @@ class SyncThread(QtCore.QThread):
 
         # if the query did not return a result, setup the sync table
         # with update_count 0 and last_sync as current date/time
+        # MKG: added Rate Limit defaults
         if not self.sync_state:
             self.sync_state = models.Sync(
-                update_count=0, last_sync=self.last_sync)
+                update_count=0, 
+                last_sync=self.last_sync,
+                rate_limit=false,
+                rate_limit_time=0,
+                rate_limit_happened=0)
                 
             # update Sync table
             self.session.add(self.sync_state)
