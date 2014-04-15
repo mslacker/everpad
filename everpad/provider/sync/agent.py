@@ -258,10 +258,27 @@ class SyncThread(QtCore.QThread):
         # get date/time to set new late sync value
         self.last_sync = datetime.now()
         
+        if self.rate_limit:
+            if self.last_sync < self.rate_limit_time:
+                self.status = const.STATUS_NONE
+                self.app.log("Stopped - Still Rate Limit.")
+                return
+            else:
+                self.rate_limit = 0
+                self.app.log("Rate Limit cleared.")
+
         # ??? Tell the world we are start sync
         self.sync_state_changed.emit(const.SYNC_STATE_START)
 
         need_to_update = self._need_to_update()
+        
+        # we hit a rate limit, might as well bug out here
+        if self.rate_limit and !need_to_update:
+            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
+            self.status = const.STATUS_NONE
+            self.data_changed.emit()
+            self.app.log("Stopped - Rate Limit.")
+            return
 
         try:
             if need_to_update:
