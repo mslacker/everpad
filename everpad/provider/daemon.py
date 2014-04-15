@@ -22,6 +22,9 @@ class ProviderApp(AppClass):
 
     def __init__(self, verbose, *args, **kwargs):
         
+        # non-kde:
+        # from PySide.QtCore import QCoreApplication    
+        # AppClass = QCoreApplication
         AppClass.__init__(self, *args, **kwargs)
         
         # ref:  http://qt-project.org/doc/qt-4.8/qsettings.html
@@ -32,7 +35,7 @@ class ProviderApp(AppClass):
         #  Backwards?
         self.settings = QSettings('everpad', 'everpad-provider')
         
-        # debug output
+        # debug output - true if verbose passed
         self.verbose = verbose
 
         # Ref: http://excid3.com/blog/an-actually-decent-python-dbus-tutorial/
@@ -46,10 +49,12 @@ class ProviderApp(AppClass):
         # setup Sync thread
         self.sync_thread = SyncThread()
 
+        # connect Sync thread sync_state_changed
         self.sync_thread.sync_state_changed.connect(
             Slot(int)(self.service.sync_state_changed),
         )
 
+        # connect Sync thread data_changed
         self.sync_thread.data_changed.connect(
             Slot()(self.service.data_changed),
         )
