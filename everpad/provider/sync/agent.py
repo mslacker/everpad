@@ -71,7 +71,7 @@ class SyncThread(QtCore.QThread):
             # update Sync table
             self.session.add(self.sync_state)
             self.session.commit()
-        elif:
+        else:
             # MKG: zero my play values
             self.sync_state.rate_limit=0
             self.sync_state.rate_limit_time=0
@@ -203,8 +203,7 @@ class SyncThread(QtCore.QThread):
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                 self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
                 self.sync_state.rate_limit = e.rateLimitDuration
-                self.sync_state.rate_limit_time = datetime.now() + 
-                    datetime.timedelta(seconds=e.rateLimitDuration)
+                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
                 return False
 
         except socket.error, e:
@@ -258,14 +257,14 @@ class SyncThread(QtCore.QThread):
         # get date/time to set new late sync value
         self.last_sync = datetime.now()
         
-        if self.rate_limit:
-            if self.last_sync < self.rate_limit_time:
-                self.status = const.STATUS_NONE
-                self.app.log("Stopped - Still Rate Limit.")
-                return
-            else:
-                self.rate_limit = 0
-                self.app.log("Rate Limit cleared.")
+#        if self.rate_limit:
+#            if self.last_sync < self.rate_limit_time:
+#                self.status = const.STATUS_NONE
+#                self.app.log("Stopped - Still Rate Limit.")
+#                return
+#            else:
+#                self.rate_limit = 0
+#                self.app.log("Rate Limit cleared.")
 
         # ??? Tell the world we are start sync
         self.sync_state_changed.emit(const.SYNC_STATE_START)
@@ -273,12 +272,12 @@ class SyncThread(QtCore.QThread):
         need_to_update = self._need_to_update()
         
         # we hit a rate limit, might as well bug out here
-        if self.rate_limit and !need_to_update:
-            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
-            self.status = const.STATUS_NONE
-            self.data_changed.emit()
-            self.app.log("Stopped - Rate Limit.")
-            return
+#        if self.rate_limit and not need_to_update:
+#            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
+#            self.status = const.STATUS_NONE
+#            self.data_changed.emit()
+#            self.app.log("Stopped - Rate Limit.")
+#            return
 
         try:
             if need_to_update:
