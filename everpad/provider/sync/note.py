@@ -321,9 +321,16 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         self.app.log("Resource binary %s." % resource.file_path)
         
-        data_body = self.note_store.getResourceData(
-            self.auth_token, resource.guid)
-        
+        try:
+            data_body = self.note_store.getResourceData(
+                self.auth_token, resource.guid)
+        except EDAMSystemException, e:
+            if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                self.sync_state.rate_limit = e.rateLimitDuration
+                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
+                return
+
         with open(resource.file_path, 'w') as data:
             data.write(data_body)
             
