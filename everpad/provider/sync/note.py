@@ -299,10 +299,16 @@ class PullNote(BaseSync, ShareNoteMixin):
             
             # this will be zero if all the notes were received from the 
             # findNotesMetadata
-            # ???? does this make sense???  
+            # I guess because API:
+            # "The service will return a set of notes that is no larger than this number, 
+            # but may return fewer notes if needed. The NoteList.totalNotes field in the 
+            # return value will indicate whether there are more values available after 
+            # the returned set."
+            # -- just in case findNotesMetadata does not return all on first call
             if note_list.totalNotes - offset <= 0:
                 break
-        # end while True
+        
+        # #################  end while True
 
 
     # **************** Get Full Note ****************
