@@ -5,7 +5,7 @@ from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.error.ttypes import EDAMSystemException
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
-from evernote.edam.notestore.ttypes import NoteFilter
+from evernote.edam.notestore.ttypes import NoteFilter, NotesMetadataResultSpec
 from ... import const
 from .. import models
 from .base import BaseSync
@@ -231,7 +231,7 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     def _get_all_notes(self):
         """Iterate all notes"""
-
+        self.app.log("get_all_notes")
         offset = 0
 
         # Function: NoteStore.findNotes - DEPRECATED. Use findNotesMetadata
@@ -245,24 +245,23 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         # From 0 (offset) to EDAM_USER_NOTES_MAX - return NotesMetadataList
 
-        # setup filter
-        get_note_filter = note_store.NoteFilter()
-        get_note_filter.order = ttypes.NoteSortOrder.UPDATED
-        get_note_filter.ascending = False
-        
-        # NotesMetadataResultSpec setup
-        spec = note_store.NotesMetadataResultSpec()
-        spec.includeTitle = True
-        spec.includeCreated = True
-        spec.includeUpdated = True
-        spec.includeDeleted = True
-
         while True:
             try:
                 note_list = self.note_store.findNotesMetadata(
-                    self.auth_token, get_note_filter,
-                    offset, limits.EDAM_USER_NOTES_MAX,
-                    spec)
+                    self.auth_token, 
+                    NoteFilter(
+                        order=ttypes.NoteSortOrder.UPDATED,
+                        ascending=False,
+                    ), 
+                    offset, 
+                    limits.EDAM_USER_NOTES_MAX,
+                    NotesMetadataResultSpec(
+                        includeTitle=True,
+                        includeCreated = True,
+                        includeUpdated=True,
+                        includeDeleted=True,
+                    )
+                )
             except EDAMSystemException, e:
                 if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                     self.app.log(
