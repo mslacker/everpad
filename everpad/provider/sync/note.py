@@ -192,10 +192,16 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         # okay, so _get_all_notes uses a generator to yield each note
         # one at a time - great leap for a python dummy such as myself
+        # _get_all_notes using findNotesMetadata returns note_ttype (note)
+        # with guid and title
         for note_ttype in self._get_all_notes():
             
-            self.app.log(
-                'Pulling note "%s" from remote server.' % note_ttype.title)
+            if note_ttype.title:
+                self.app.log(
+                    'Pulling note "%s" from remote server.' % note_ttype.title)
+            else:
+                self.app.log(
+                    'Pulling note "%s" from remote server.' % note_ttype.guid)
 
             # note_ttype is a Note structure of the note
             try:
@@ -249,7 +255,6 @@ class PullNote(BaseSync, ShareNoteMixin):
         # note. 
         
 
-
         # setup filter
         get_note_filter = note_store.NoteFilter()
         get_note_filter.order = ttypes.NoteSortOrder.UPDATED
@@ -258,9 +263,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # NotesMetadataResultSpec setup
         spec = note_store.NotesMetadataResultSpec()
         spec.includeTitle = True
-        
-#        findNotesMetadata(string authenticationToken, filter, offset, limits.EDAM_USER_NOTES_MAX, spec)
-        
+
         while True:
             try:
                 note_list = self.note_store.findNotesMetadata(
