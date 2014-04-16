@@ -248,23 +248,37 @@ class PullNote(BaseSync, ShareNoteMixin):
         # totalNotes :)  Anyway, note_list.notes is a list of Struct: Note for each
         # note. 
         
+
+
+        # setup filter
+        get_note_filter = note_store.NoteFilter()
+        get_note_filter.order = ttypes.NoteSortOrder.UPDATED
+        get_note_filter.ascending = False
         
-#        filter = note_store.NoteFilter()
-#        filter.order = ttypes.NoteSortOrder.UPDATED
-#        filter.ascending = False
-        
-#        spec = note_store.NotesMetadataResultSpec()
-#        spec 
+        # NotesMetadataResultSpec setup
+        spec = note_store.NotesMetadataResultSpec()
+        spec.includeTitle = True
         
 #        findNotesMetadata(string authenticationToken, filter, offset, limits.EDAM_USER_NOTES_MAX, spec)
         
         while True:
-            note_list = self.note_store.findNotes(
-                self.auth_token, NoteFilter(
-                    order=ttypes.NoteSortOrder.UPDATED,
-                    ascending=False,
-                ), offset, limits.EDAM_USER_NOTES_MAX,
-            )
+            try:
+                note_list = self.note_store.findNotesMetadata(
+                    self.auth_token, get_note_filter,
+                    offset, limits.EDAM_USER_NOTES_MAX,
+                    spec)
+            except EDAMSystemException, e:
+                if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                    self.app.log(
+                        "Rate limit in note_list: %d seconds" % e.rateLimitDuration)
+                    break
+
+#            note_list = self.note_store.findNotes(
+#                self.auth_token, NoteFilter(
+#                    order=ttypes.NoteSortOrder.UPDATED,
+#                    ascending=False,
+#                ), offset, limits.EDAM_USER_NOTES_MAX,
+#            )
 
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
@@ -277,9 +291,15 @@ class PullNote(BaseSync, ShareNoteMixin):
             for note in note_list.notes:
                 yield note
 
-            # inc offset
+            # inc offset: okay, since we start from offset 0 then startIndex
+            # should be 0 on first pass then add len(note_list.notes) which
+            # should be total number of notes we grab with the findNotesMetadata
+            # call, so offset will be our max notes here
             offset = note_list.startIndex + len(note_list.notes)
             
+            # this will be zero if all the notes were received from the 
+            # findNotesMetadata
+            # ???? does this make sense???  
             if note_list.totalNotes - offset <= 0:
                 break
         # end while True
