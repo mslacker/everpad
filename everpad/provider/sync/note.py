@@ -2,6 +2,7 @@ from BeautifulSoup import BeautifulSoup
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import sanitize
 from evernote.edam.error.ttypes import EDAMUserException
+from evernote.edam.error.ttypes import EDAMSystemException
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
 from evernote.edam.notestore.ttypes import NoteFilter
@@ -135,6 +136,7 @@ class PushNote(BaseSync, ShareNoteMixin):
         try:
             note_ttype = self.note_store.createNote(self.auth_token, note_ttype)
             note.guid = note_ttype.guid
+
         except EDAMUserException as e:
             note.action = const.ACTION_NONE
             self.app.log('Push new note "%s" failed.' % note.title)
@@ -146,6 +148,11 @@ class PushNote(BaseSync, ShareNoteMixin):
         """Push changed note to remote"""
         try:
             self.note_store.updateNote(self.auth_token, note_ttype)
+        except EDAMSystemException, e:
+            if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                self.sync_state.rate_limit = e.rateLimitDuration
+                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
         except EDAMUserException as e:
             self.app.log('Push changed note "%s" failed.' % note.title)
             self.app.log(note_ttype)
@@ -158,6 +165,11 @@ class PushNote(BaseSync, ShareNoteMixin):
         """Delete note"""
         try:
             self.note_store.deleteNote(self.auth_token, note_ttype.guid)
+        except EDAMSystemException, e:
+            if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                self.sync_state.rate_limit = e.rateLimitDuration
+                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
         except EDAMUserException as e:
             self.app.log('Note %s already removed' % note.title)
             self.app.log(e)
