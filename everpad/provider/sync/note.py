@@ -394,7 +394,11 @@ class PullNote(BaseSync, ShareNoteMixin):
     # or the binary contents of any resources.
     def _update_note(self, note_ttype):
         """Update changed note"""
-
+        
+        # @@@@ okay, I'm good with this - every note has a guid
+        # so this queries for note guid and returns the note if
+        # exists - if not exists NoResultFound and return to create
+        # the note
         note = self.session.query(models.Note).filter(
             models.Note.guid == note_ttype.guid,
         ).one()
@@ -402,12 +406,17 @@ class PullNote(BaseSync, ShareNoteMixin):
         # note_ttype is Note structure that includes all metadata (attributes, 
         # resources, etc.), but will not include the ENML content of the note 
         # or the binary contents of any resources.
-        note_ttype = self._get_full_note(note_ttype)
+        
+        # @@@ not cool here - check for update before API call 
+        # check note.updated < note_ttype.updated here
+#        note_ttype = self._get_full_note(note_ttype)
 
         # if note in database is older than evernote then check for 
         # const.ACTION_CHANGE and create conflict if true or create note 
         # if in database if ! const.ACTION_CHANGE
         if note.updated < note_ttype.updated:
+            # @@@ Does this work moved here ???? 
+            note_ttype = self._get_full_note(note_ttype)
             if note.action == const.ACTION_CHANGE:
                 self._create_conflict(note, note_ttype)
             else:
