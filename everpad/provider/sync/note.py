@@ -253,6 +253,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         # NotesMetadataResultSpec setup
         spec = note_store.NotesMetadataResultSpec()
         spec.includeTitle = True
+        spec.includeCreated = True
+        spec.includeUpdated = True
+        spec.includeDeleted = True
 
         while True:
             try:
