@@ -196,6 +196,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # with guid and title
         for note_ttype in self._get_all_notes():
             
+            # Do I need this? If no title log guid
             if note_ttype.title:
                 self.app.log(
                     'Pulling note "%s" from remote server.' % note_ttype.title)
@@ -230,14 +231,9 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     def _get_all_notes(self):
         """Iterate all notes"""
+
         offset = 0
 
-        # NoteList findNotes(string authenticationToken, NoteFilter filter, 
-        #                      i32 offset, i32 maxNotes)
-        # Ref: http://dev.evernote.com/doc/articles/searching_notes.php
-        #      http://dev.evernote.com/doc/reference/
-        #                 Limits.html#Const_EDAM_USER_NOTES_MAX
-        
         # Function: NoteStore.findNotes - DEPRECATED. Use findNotesMetadata
         # NotesMetadataList findNotesMetadata(string authenticationToken,
         #                            NoteFilter filter,
@@ -247,13 +243,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # throws Errors.EDAMUserException, Errors.EDAMSystemException, Errors.
         #        EDAMNotFoundException
 
-        
-        # DEPRECATED. Use findNotesMetadata, but anyway what is going on here -
-        # findNotes from 0 (offset) to EDAM_USER_NOTES_MAX
-        # So this returns a NoteList - which here seems strange because it returns
-        # totalNotes :)  Anyway, note_list.notes is a list of Struct: Note for each
-        # note. 
-        
+        # From 0 (offset) to EDAM_USER_NOTES_MAX - return NotesMetadataList
 
         # setup filter
         get_note_filter = note_store.NoteFilter()
@@ -275,13 +265,6 @@ class PullNote(BaseSync, ShareNoteMixin):
                     self.app.log(
                         "Rate limit in note_list: %d seconds" % e.rateLimitDuration)
                     break
-
-#            note_list = self.note_store.findNotes(
-#                self.auth_token, NoteFilter(
-#                    order=ttypes.NoteSortOrder.UPDATED,
-#                    ascending=False,
-#                ), offset, limits.EDAM_USER_NOTES_MAX,
-#            )
 
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
@@ -311,7 +294,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             if note_list.totalNotes - offset <= 0:
                 break
         
-        # #################  end while True
+        # #################  end while True  ################# 
 
 
     # **************** Get Full Note ****************
