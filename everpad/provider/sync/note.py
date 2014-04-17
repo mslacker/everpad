@@ -31,6 +31,7 @@ class ShareNoteMixin(object):
     def _share_note(self, note, share_date=None):
         """Share or receive info about sharing"""
         try:
+            # @@@@@ API call could get Rate limit            
             share_key = self.note_store.shareNote(self.auth_token, note.guid)
             note.share_url = "https://www.evernote.com/shard/{}/sh/{}/{}".format(
                 self._get_shard_id(), note.guid, share_key,
@@ -213,7 +214,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
-            # note_ttype == Types.Note
+            # NotesMetadataList - includeAttributes
             # set or unset sharing
             self._check_sharing_information(note, note_ttype)
             
@@ -244,6 +245,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         #        EDAMNotFoundException
 
         # From 0 (offset) to EDAM_USER_NOTES_MAX - return NotesMetadataList
+        #
 
         while True:
             try:
@@ -260,6 +262,8 @@ class PullNote(BaseSync, ShareNoteMixin):
                         includeCreated = True,
                         includeUpdated=True,
                         includeDeleted=True,
+                        includeAttributes=True,
+                        includeLargestResourceSize=True,
                     )
                 )
             except EDAMSystemException, e:
@@ -271,11 +275,8 @@ class PullNote(BaseSync, ShareNoteMixin):
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
             # https://wiki.python.org/moin/Generators
-            
-            # NoteStore.findNotes returns a NoteList structure as
-            # note_list.  note_list.notes is a list of Note structures
-            # from offset 0 to EDAM_USER_NOTES_MAX (?).  Each note is
-            # yielded (yield note) for create or update in pull()
+            # Each NotesMetadataList.notes is yielded (yield note) for 
+            # create or update in pull()
             for note in note_list.notes:
                 yield note
 
@@ -318,7 +319,7 @@ class PullNote(BaseSync, ShareNoteMixin):
             self.auth_token, note_ttype.guid,
             True, True, True, True,
         )
-
+        #### !!!! need rate limit crap here
 
     # **************** Get Resource Data ****************
     #
@@ -332,7 +333,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # string getResourceData(
         #         string authenticationToken,
         #         Types.Guid guid)
-
+        
         self.app.log("Resource binary %s." % resource.file_path)
         
         try:
@@ -359,16 +360,16 @@ class PullNote(BaseSync, ShareNoteMixin):
     # in the database
     def _create_note(self, note_ttype):
         """Create new note"""
-
-        # returns Types.Note with Note content.
-        # !!!! binary contents of the resources 
-        # !!!! and their recognition data will be omitted
+        
+        # returns Types.Note with Note content, binary contents 
+        # of the resources and their recognition data will be omitted
         note_ttype = self._get_full_note(note_ttype)
+
+        # !!!!! Rate Limit handle
         
         # So now I understand the continued use of note_ttype
         # if it gets to create then missing info is ADDED to 
         # note_ttype ... less resources binary info
-        
 
         # Put note into local database
         # ... create Note ORM with guid
@@ -379,7 +380,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # ... commit note data
         self.session.add(note)
         self.session.commit()
-        
+       
         # Is note the models.py version at this point?
         # why yes it is - confused yet?
         # does return note signal end of yield?
@@ -420,6 +421,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 self._create_conflict(note, note_ttype)
             else:
                 note.from_api(note_ttype, self.session)
+        
         return note
 
     
@@ -460,11 +462,19 @@ class PullNote(BaseSync, ShareNoteMixin):
     # note_ttype == Types.Note
     def _receive_resources(self, note, note_ttype):
         """Receive note resources"""
+
+        # empty resource id list        
         resources_ids = []
 
         # Update note resources in database and download or delete
         # actual binary data?  See resource.from_api in models.py
         
+        if note_ttype.largestResourceSize:
+            self.app.log("Has resource %d" % note_ttype.largestResourceSize)
+            return
+        else:
+            self.app.log("No resource")
+            return        	
         
         # So WTH is the [] for? Need to figure that one
         # Anyway, try: looks in database for the resource guid, if
