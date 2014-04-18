@@ -495,6 +495,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                     
                     self._get_resource_data(resource)
                     
+            # resourse not found in database then:
             except NoResultFound:
                 resource = models.Resource(
                     guid=resource_ttype.guid,
