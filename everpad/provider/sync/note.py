@@ -371,7 +371,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # if it gets to create then missing info is ADDED to 
         # note_ttype ... less resources binary info
 
-        # Put note into local database
+        # Put note into local database
         # ... create Note ORM with guid
         note = models.Note(guid=note_ttype.guid)
         # ... add other note information
@@ -470,7 +470,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # actual binary data?  See resource.from_api in models.py
         
         if note_ttype.largestResourceSize:
-            self.app.log("Has resource %d" % note_ttype.largestResourceSize)
+            self.app.log("Has resource")
             return
         else:
             self.app.log("No resource")
@@ -484,25 +484,33 @@ class PullNote(BaseSync, ShareNoteMixin):
         # The except handles resources that do not exist.  
         for resource_ttype in note_ttype.resources or []:
             try:
+                # Is the resource in the database? If not then except NoResultFound  
                 resource = self.session.query(models.Resource).filter(
                     models.Resource.guid == resource_ttype.guid,
                 ).one()
+
+                # append resource id to list
                 resources_ids.append(resource.id)
+
+                # if resource changed (hash does not match) then
+                # re-get resource
                 if resource.hash != binascii.b2a_hex(
                     resource_ttype.data.bodyHash,
                 ):
                     resource.from_api(resource_ttype)
-                    
                     self._get_resource_data(resource)
+                    #@@@@ do I need session.commit() here????
+                    # I put it here for now
+                    self.session.commit()
                     
             # resourse not found in database then:
             except NoResultFound:
+                # Make new database entry and get resource
                 resource = models.Resource(
                     guid=resource_ttype.guid,
                     note_id=note.id,
                 )
                 resource.from_api(resource_ttype)
-                
                 self._get_resource_data(resource)
                 
                 self.session.add(resource)

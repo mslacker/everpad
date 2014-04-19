@@ -60,7 +60,19 @@ class SyncThread(QtCore.QThread):
         # if the query did not return a result, setup the sync table
         # with update_count 0 and last_sync as current date/time
         # MKG: added Rate Limit defaults
+        
+        # MKG 041914 - okay, I need to go back and get a couple things straight.
+        # I want to set the state of the database at this point. This check was from the 
+        # original code, so if the query returns sync_state as false then I am going
+        # to say this is an initial sync.  Let's set up sync with current server values 
+        # right from the start.
+        
+        # update_count 
+        
+        
         if not self.sync_state:
+            
+            
             self.sync_state = models.Sync(
                 update_count=0, 
                 last_sync=self.last_sync,

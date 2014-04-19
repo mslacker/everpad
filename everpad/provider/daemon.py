@@ -170,7 +170,7 @@ def main():
         app = ProviderApp(args.verbose, sys.argv)
         app.exec_()
     except IOError:
-        print("everpad-provider already ran")
+        print("everpad-provider already running")
     except Exception as e:
         app.logger.debug(e)
 
