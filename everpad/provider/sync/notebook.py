@@ -13,11 +13,16 @@ import regex
 #        PushNotebook and PullNoteBook
 
 
+# *************************************************
+# **************    Push Notebook    **************
+# *************************************************
 class PushNotebook(BaseSync):
     """Notebook sync"""
 
     def push(self):
         """Push notebook changes to server"""
+        
+        # for each notebook that requires action
         for notebook in self.session.query(models.Notebook).filter(
             models.Notebook.action != const.ACTION_NONE,
         ):
@@ -108,6 +113,9 @@ class PushNotebook(BaseSync):
         self.session.commit()
 
 
+# *************************************************
+# **************    Pull Notebook    **************
+# *************************************************
 class PullNotebook(BaseSync):
     """Pull notebook from server"""
 
@@ -117,35 +125,65 @@ class PullNotebook(BaseSync):
 
     def pull(self):
         """Receive notebooks from server"""
+        
+        # request and return all notebooks in Notebook structure
         for notebook_ttype in self.note_store.listNotebooks(self.auth_token):
             self.app.log(
                 'Pulling notebook "%s" from remote server.' % notebook_ttype.name)
+            
             try:
                 notebook = self._update_notebook(notebook_ttype)
             except NoResultFound:
                 notebook = self._create_notebook(notebook_ttype)
+            
             self._exists.append(notebook.id)
 
+        # commit local changes
         self.session.commit()
+        
+        # remove unneeded from database
         self._remove_notebooks()
 
-    def _create_notebook(self, notebook_ttype):
-        """Create notebook from ttype"""
-        notebook = models.Notebook(guid=notebook_ttype.guid)
-        notebook.from_api(notebook_ttype)
-        self.session.add(notebook)
-        self.session.commit()
-        return notebook
 
+    # ************** Update Notebook **************
+    #
     def _update_notebook(self, notebook_ttype):
         """Try to update notebook from ttype"""
+        
+        # is the notebook in the local database?
+        # if NoResultFound then return and create new
         notebook = self.session.query(models.Notebook).filter(
             models.Notebook.guid == notebook_ttype.guid,
         ).one()
+        
+        # if is in database then update it from the server
         if notebook.service_updated < notebook_ttype.serviceUpdated:
             notebook.from_api(notebook_ttype)
+            
+        # done    
         return notebook
 
+
+    # ************** Create Notebook **************
+    #
+    def _create_notebook(self, notebook_ttype):
+        """Create notebook from ttype"""
+        
+        # create new notebook -- Notebook - models.py
+        notebook = models.Notebook(guid=notebook_ttype.guid)
+        # fill in values 
+        notebook.from_api(notebook_ttype)
+        
+        # add/commit to local database
+        self.session.add(notebook)
+        self.session.commit()
+        
+        # done
+        return notebook
+
+
+    # ************** Remove Notebook **************
+    #
     def _remove_notebooks(self):
         """Remove not received notebooks"""
         if self._exists:
@@ -158,3 +196,8 @@ class PullNotebook(BaseSync):
 
         self.session.query(models.Notebook).filter(
             q).delete(synchronize_session='fetch')
+            
+   
+   
+   # !!!!!!!!!!!!  share notebooks ?????? 
+            
