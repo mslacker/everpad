@@ -216,8 +216,16 @@ class PullNote(BaseSync, ShareNoteMixin):
             #        |             server note         
             #   _create_note       newer
             #        |             |----- Yes --- _get_full_note
-            #        |             |
-            #   _get_full_note
+            #        |             |                 |
+            #   _get_full_note     |              local note
+            #                      |         ---- also changed
+            #                      |         |            |
+            #                      |         | Yes        | No
+            #                      return    |            |
+            #                                |            |
+            #                                |         from_api
+            #                          _create_conflict
+            #
             try:
                 note = self._update_note(note_ttype)
             except NoResultFound:
@@ -403,50 +411,49 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     # **************** Update Note****************
     #
-    # note_ttype is Note structure that includes all metadata (attributes, 
-    # resources, etc.), but will not include the ENML content of the note 
-    # or the binary contents of any resources.
+    # note_ttype is NotesMetadataList -> NoteMetadata.notes structure 
+    # that includes metadata, see _get_all_notes
     def _update_note(self, note_ttype):
         """Update changed note"""
         
-        # @@@@ okay, I'm good with this - every note has a guid
-        # so this queries for note guid and returns the note if
-        # exists - if not exists NoResultFound and return to create
-        # the note
+        # queries for note guid and returns the note if
+        # exists in database - if not exists NoResultFound and return 
         note = self.session.query(models.Note).filter(
             models.Note.guid == note_ttype.guid,
         ).one()
 
-        # note_ttype is Note structure that includes all metadata (attributes, 
-        # resources, etc.), but will not include the ENML content of the note 
-        # or the binary contents of any resources.
+        # --> note guid exists in database, check for update 
         
-        # @@@ not cool here - check for update before API call 
-        # check note.updated < note_ttype.updated here
-#        note_ttype = self._get_full_note(note_ttype)
-
-        # if note in database is older than evernote then check for 
-        # const.ACTION_CHANGE and create conflict if true or create note 
+        # - if note in database is older than server then true 
+        # - if const.ACTION_CHANGE has also been changed local so
+        #   create conflict note  
         # if in database if ! const.ACTION_CHANGE
         if note.updated < note_ttype.updated:
-            # @@@ Does this work moved here ???? 
-            self.app.log("Updating note.")            
+            
+            # get full note
             note_ttype = self._get_full_note(note_ttype)
             
             # conflict because the server note is newer than
             # the local note in addition the local note has changed            
             if note.action == const.ACTION_CHANGE:
+            	 # create conflict note
                 self._create_conflict(note, note_ttype)
             else:
+                # else update database with new sever note
                 note.from_api(note_ttype, self.session)
         
         return note
-
+    
     
     # **************** Create Conflict ****************
     #
+    # This is called when updating and server note is newer
+    # local and local has changed since last sync
+    #   note = database note
+    #   note_ttype = full note structure
     def _create_conflict(self, note, note_ttype):
         """Create conflict note"""
+        
         conflict_note = models.Note()
         conflict_note.from_api(note_ttype, self.session)
         conflict_note.guid = ''
