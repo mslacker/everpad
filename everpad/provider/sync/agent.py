@@ -1,4 +1,4 @@
-from evernote.edam.error.ttypes import EDAMSystemException
+from evernote.edam.error.ttypes import EDAMUserException, EDAMSystemException, EDAMErrorCode
 from PySide import QtCore
 from datetime import datetime
 from ... import const
@@ -282,14 +282,12 @@ class SyncThread(QtCore.QThread):
         try:
             update_count = self.note_store.getSyncState(
                 self.auth_token).updateCount
-
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                 self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
                 self.sync_state.rate_limit = e.rateLimitDuration
                 self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
                 return False
-
         except socket.error, e:
             # MKG: I want to track connect errors
             self.sync_state.connect_error_count+=1
