@@ -283,11 +283,13 @@ class Tag(Base):
     id = Column(Integer, primary_key=True)
     guid = Column(String)
     name = Column(String)
+    parentGuid = Column(String)
     action = Column(Integer)
 
     def from_api(self, tag):
         """Fill data from api"""
         self.name = tag.name.decode('utf8')
+        self.parentGuid = tag.parentGuid
         self.action = const.ACTION_NONE
 
 
