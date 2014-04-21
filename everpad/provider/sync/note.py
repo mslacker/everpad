@@ -1,8 +1,7 @@
 from BeautifulSoup import BeautifulSoup
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import sanitize
-from evernote.edam.error.ttypes import EDAMUserException
-from evernote.edam.error.ttypes import EDAMSystemException
+from evernote.edam.error.ttypes import EDAMUserException, EDAMSystemException, EDAMErrorCode
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
 from evernote.edam.notestore.ttypes import NoteFilter, NotesMetadataResultSpec
@@ -193,19 +192,32 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         # okay, so _get_all_notes uses a generator to yield each note
         # one at a time - great leap for a python dummy such as myself
-        # _get_all_notes using findNotesMetadata returns note_ttype (note)
-        # with guid and title
+        # _get_all_notes using findNotesMetadata returns NotesMetadataList
         for note_ttype in self._get_all_notes():
             
-            # Do I need this? If no title log guid
-            if note_ttype.title:
-                self.app.log(
-                    'Pulling note "%s" from remote server.' % note_ttype.title)
-            else:
-                self.app.log(
-                    'Pulling note "%s" from remote server.' % note_ttype.guid)
-
-            # note_ttype is a Note structure of the note
+            # If no title returns "Untitled note"
+            self.app.log(
+                'Pulling note "%s" from remote server.' % note_ttype.title)
+         
+            # note_ttype is a NotesMetadataList -> NoteMetadata (notes)
+            # structure of the note
+            
+            # @@@@ the resource grab/update is going to have to happen in
+            #  _create_note  _update_note          
+            
+            
+            # Pull sequence:
+            #  
+            # _update_note  
+            #    |
+            #    |- note guid in database? 
+            #        | No          | Yes                               
+            #        |             |
+            #        |             server note         
+            #   _create_note       newer
+            #        |             |----- Yes --- _get_full_note
+            #        |             |
+            #   _get_full_note
             try:
                 note = self._update_note(note_ttype)
             except NoResultFound:
@@ -272,6 +284,8 @@ class PullNote(BaseSync, ShareNoteMixin):
                         "Rate limit in note_list: %d seconds" % e.rateLimitDuration)
                     break
 
+            self.app.log("Total notes %d" % note_list.totalNotes)
+            
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
             # https://wiki.python.org/moin/Generators
@@ -372,9 +386,9 @@ class PullNote(BaseSync, ShareNoteMixin):
         # note_ttype ... less resources binary info
 
         # Put note into local database
-        # ... create Note ORM with guid
+        #    ... create Note ORM with guid
         note = models.Note(guid=note_ttype.guid)
-        # ... add other note information
+        #    ... add other note information
         note.from_api(note_ttype, self.session)
         
         # ... commit note data
@@ -416,7 +430,11 @@ class PullNote(BaseSync, ShareNoteMixin):
         # if in database if ! const.ACTION_CHANGE
         if note.updated < note_ttype.updated:
             # @@@ Does this work moved here ???? 
+            self.app.log("Updating note.")            
             note_ttype = self._get_full_note(note_ttype)
+            
+            # conflict because the server note is newer than
+            # the local note in addition the local note has changed            
             if note.action == const.ACTION_CHANGE:
                 self._create_conflict(note, note_ttype)
             else:

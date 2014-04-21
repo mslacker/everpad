@@ -348,9 +348,31 @@ class Sync(Base):
     id = Column(Integer, primary_key=True)
     update_count = Column(Integer)
     last_sync = Column(Integer)
+    virgin_db = Column(Integer)
     # MKG:  Think I am going to track rate limit here    
     rate_limit = Column(Integer)
     rate_limit_time = Column(Integer)
     connect_error_count = Column(Integer)
  
+# *************************************************************
+# Me playing - future
+class Account(Base):
+    __tablename__ = 'account'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    username = Column(String)
+    email = Column(String)
+    created = Column(Integer)
+    updated = Column(Integer)
+    deleted = Column(Integer)
+    active = Column(Integer)
+
+
+
+
+
+
+
+
+
 

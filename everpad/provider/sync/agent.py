@@ -39,57 +39,13 @@ class SyncThread(QtCore.QThread):
         # setup wait_condition and mutex
         self._init_locks()
 
-
-    # *** Initialize Sync
-    # Setup Sync table with values and set status
-    def _init_sync(self):
-        """Init sync"""
-        
-        # set status         
-        self.status = const.STATUS_NONE
-        
-        # get current datetime
-        # https://docs.python.org/2/library/datetime.html#datetime-objects
-        # consider time zone?         
-        self.last_sync = datetime.now()
-        
-        # query Sync table - Return the first result of this Query or None 
-        # if the result doesn’t contain any row.
-        self.sync_state = self.session.query(models.Sync).first()
-
-        # if the query did not return a result, setup the sync table
-        # with update_count 0 and last_sync as current date/time
-        # MKG: added Rate Limit defaults
-        
-        # MKG 041914 - okay, I need to go back and get a couple things straight.
-        # I want to set the state of the database at this point. This check was from the 
-        # original code, so if the query returns sync_state as false then I am going
-        # to say this is an initial sync.  Let's set up sync with current server values 
-        # right from the start.
-        
-        # update_count 
-        
-        
-        if not self.sync_state:
-            
-            
-            self.sync_state = models.Sync(
-                update_count=0, 
-                last_sync=self.last_sync,
-                rate_limit=0,
-                rate_limit_time=0,
-                connect_error_count=0)
+    # **************************************************************
+    # *                                                            *
+    # *  Timer routines called by __init__ during initialization   *
+    # *     _init_timer(), _init_locks(), update_timer()           *   
+    # *                                                            *
+    # **************************************************************
                 
-            # update Sync table
-            self.session.add(self.sync_state)
-            self.session.commit()
-        else:
-            # MKG: zero my play values
-            self.sync_state.rate_limit=0
-            self.sync_state.rate_limit_time=0
-            self.sync_state.connect_error_count=0
-            self.session.commit()
-
     # *** Initialize Timer
     # Initialize timer, connect to sync signal, set delay,
     # and start timer.
@@ -149,6 +105,85 @@ class SyncThread(QtCore.QThread):
             
    # *** End Update Timer
 
+    # **************************************************************
+    # *                                                            *
+    # *  Timer routines called by run( ) during start              *
+    # *     _init_db(), _init_network(), _init_sync()              *   
+    # *                                                            *
+    # **************************************************************
+
+    # *** Initialize Database
+    # Setup database - tools.py    
+    def _init_db(self):
+        """Init database"""
+        self.session = tools.get_db_session()
+
+    # Initialize Network
+    # Get get_auth_token get_note_store get_user_store - tools.py
+    def _init_network(self):
+        """Init connection to remote server"""
+        while True:
+            try:
+                self.auth_token = tools.get_auth_token()
+                self.note_store = tools.get_note_store(self.auth_token)
+                self.user_store = tools.get_user_store(self.auth_token)
+                break
+            except socket.error:
+                time.sleep(30)
+                
+    # *** Initialize Sync
+    # Setup Sync table with values and set status
+    def _init_sync(self):
+        """Init sync"""
+        
+        # set status to None         
+        self.status = const.STATUS_NONE
+        
+        # get current datetime
+        # https://docs.python.org/2/library/datetime.html#datetime-objects
+        # consider time zone?         
+        self.last_sync = datetime.now()
+        
+        # query Sync table - Return the first result of this Query or None 
+        # if the result doesn’t contain any row.
+        self.sync_state = self.session.query(models.Sync).first()
+
+        # if the query did not return a result, setup the sync table
+        # with update_count 0 and last_sync as current date/time
+        # MKG: added Rate Limit defaults
+        
+        # MKG 041914 - okay, I need to go back and get a couple things straight.
+        # I want to set the state of the database at this point. This check was from the 
+        # original code, so if the query returns sync_state as false then I am going
+        # to say this is an initial sync.  Let's set up sync with current server values 
+        # right from the start.
+        
+        # My thoughts right now
+        # update_count - 0 since no sync
+        # last_sync - ??? don't know about this
+        # virgin_db - if == 1 then this is a first run
+        # rate_limit - if provider is in a rate limit then == 1
+        # rate_limit_time - rate limit time - need more here
+        # connect_error_count - just play, might want to track later
+        
+        if not self.sync_state:
+            self.sync_state = models.Sync(
+                update_count=0, 
+                last_sync=self.last_sync,
+                virgin_db=1,
+                rate_limit=0,
+                rate_limit_time=0,
+                connect_error_count=0)
+            # update Sync table
+            self.session.add(self.sync_state)
+            self.session.commit()
+        else:
+            # MKG: zero my play values
+            self.sync_state.rate_limit=0
+            self.sync_state.rate_limit_time=0
+            self.sync_state.connect_error_count=0
+            self.session.commit()
+
     # ***** reimplement PySide.QtCore.QThread.run() *****
     #
     # This is the main loop of the thread
@@ -174,26 +209,63 @@ class SyncThread(QtCore.QThread):
             time.sleep(1)  # prevent cpu eating
     # ********** end main running loop **************
 
-    # *** Initialize Database
-    # Setup database - tools.py    
-    def _init_db(self):
-        """Init database"""
-        self.session = tools.get_db_session()
-
-    # Initialize Network
-    # Get get_auth_token get_note_store get_user_store - tools.py
-    def _init_network(self):
-        """Init connection to remote server"""
-        while True:
-            try:
-                self.auth_token = tools.get_auth_token()
-                self.note_store = tools.get_note_store(self.auth_token)
-                self.user_store = tools.get_user_store(self.auth_token)
-                break
-            except socket.error:
-                time.sleep(30)
-
     # ********** Working Routines **********
+
+    # ******** Perform Sync Operations Local and Remote *********
+    #
+    def perform(self):
+        """Perform all sync"""
+        self.app.log("Performing sync perform( )")
+        
+        # set status to sync
+        self.status = const.STATUS_SYNC
+        
+        # get date/time to set new late sync value
+        self.last_sync = datetime.now()
+
+        """        
+        I don't want to do this yet MKG
+        if self.sync_state.rate_limit:
+            if self.sync_state.last_sync < self.sync_state.rate_limit_time:
+                self.status = const.STATUS_NONE
+                self.app.log("Stopped - Still Rate Limit.")
+                return
+            else:
+                self.sync_state.rate_limit = 0
+                self.app.log("Rate Limit cleared.")
+        """
+
+        # ??? Tell the world we are start sync
+        
+        self.sync_state_changed.emit(const.SYNC_STATE_START)
+
+        need_to_update = self._need_to_update()
+        
+        # we hit a rate limit, might as well bug out here
+        if self.sync_state.rate_limit and not need_to_update:
+            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
+            self.status = const.STATUS_NONE
+            self.data_changed.emit()
+            self.app.log("Stopped - Rate Limit.")
+            return
+
+        try:
+            if need_to_update:
+                self.remote_changes()
+            self.local_changes()
+        except Exception, e:  # maybe log this
+            self.session.rollback()
+            self._init_db()
+            self.app.log(e)
+        finally:
+            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
+            self.status = const.STATUS_NONE
+            self.all_notes = None
+
+        self.data_changed.emit()
+        self.app.log("Sync performed.")
+
+
 
     def _need_to_update(self):
         """Check need for update notes"""
@@ -240,7 +312,10 @@ class SyncThread(QtCore.QThread):
 
         # true if an update and false if no update needed
         reason = update_count != self.sync_state.update_count
-        self.sync_state.update_count = update_count
+
+        
+        # self.sync_state.update_count = update_count
+        self.sync_state.update_count = 1
         return reason
 
     
@@ -256,56 +331,6 @@ class SyncThread(QtCore.QThread):
         """Do sync"""
         self.wait_condition.wakeAll()
 
-
-    # ******** Perform Sync Operations Local and Remote *********
-    #
-    def perform(self):
-        """Perform all sync"""
-        self.app.log("Performing sync perform( )")
-        
-        # set status to sync
-        self.status = const.STATUS_SYNC
-        
-        # get date/time to set new late sync value
-        self.last_sync = datetime.now()
-        
-        if self.sync_state.rate_limit:
-            if self.sync_state.last_sync < self.sync_state.rate_limit_time:
-                self.status = const.STATUS_NONE
-                self.app.log("Stopped - Still Rate Limit.")
-                return
-            else:
-                self.sync_state.rate_limit = 0
-                self.app.log("Rate Limit cleared.")
-
-        # ??? Tell the world we are start sync
-        self.sync_state_changed.emit(const.SYNC_STATE_START)
-
-        need_to_update = self._need_to_update()
-        
-        # we hit a rate limit, might as well bug out here
-        if self.sync_state.rate_limit and not need_to_update:
-            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
-            self.status = const.STATUS_NONE
-            self.data_changed.emit()
-            self.app.log("Stopped - Rate Limit.")
-            return
-
-        try:
-            if need_to_update:
-                self.remote_changes()
-            self.local_changes()
-        except Exception, e:  # maybe log this
-            self.session.rollback()
-            self._init_db()
-            self.app.log(e)
-        finally:
-            self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
-            self.status = const.STATUS_NONE
-            self.all_notes = None
-
-        self.data_changed.emit()
-        self.app.log("Sync performed.")
 
     # ******** Sync Args *********
     # get sync args for local_changes and remote_changes
