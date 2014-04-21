@@ -422,7 +422,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             models.Note.guid == note_ttype.guid,
         ).one()
 
-        # --> note guid exists in database, check for update 
+        # --> note guid exists in database, check for update
+        #     if not then return and execute the except to 
+        #     create a new local note
         
         # - if note in database is older than server then true 
         # - if const.ACTION_CHANGE has also been changed local so
