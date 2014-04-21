@@ -574,3 +574,4 @@ class PullNote(BaseSync, ShareNoteMixin):
             )
         ):
             self._share_note(note, note_ttype.attributes.shareDate)
+
