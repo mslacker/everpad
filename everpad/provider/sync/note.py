@@ -380,12 +380,12 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # _create_note pulls ENML content of the note and stores the note data
     # in the database
-    def _create_note(self, note_ttype):
+    def _create_note(self, note_meta_ttype):
         """Create new note"""
         
         # returns Types.Note with Note content, binary contents 
         # of the resources and their recognition data will be omitted
-        note_ttype = self._get_full_note(note_ttype)
+        note_full_ttype = self._get_full_note(note_meta_ttype)
 
         # !!!!! Rate Limit handle
         
@@ -395,12 +395,17 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         # Put note into local database
         #    ... create Note ORM with guid
-        note = models.Note(guid=note_ttype.guid)
+        note = models.Note(guid=note_full_ttype.guid)
         #    ... add other note information
-        note.from_api(note_ttype, self.session)
+        note.from_api(note_full_ttype, self.session)
         
         # ... commit note data
         self.session.add(note)
+        
+        #
+        # *********use note_full_ttype to get resources here
+        # !!!!!!!!!!!!!
+        
         self.session.commit()
        
         # Is note the models.py version at this point?
