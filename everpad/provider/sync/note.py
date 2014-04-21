@@ -59,28 +59,39 @@ class PushNote(BaseSync, ShareNoteMixin):
 
     def push(self):
         """Push note to remote server"""
+        
+        # for all notes where the action is not None, Noexsist, or Conflict
         for note in self.session.query(models.Note).filter(
             ~models.Note.action.in_((
                 const.ACTION_NONE, const.ACTION_NOEXSIST, const.ACTION_CONFLICT,
             ))
         ):
             self.app.log('Pushing note "%s" to remote server.' % note.title)
+            
             note_ttype = self._create_ttype(note)
-
+            
+            # create note
             if note.action == const.ACTION_CREATE:
                 self._push_new_note(note, note_ttype)
+            # change note
             elif note.action == const.ACTION_CHANGE:
                 self._push_changed_note(note, note_ttype)
+            # delete note
             elif note.action == const.ACTION_DELETE:
                 self._delete_note(note, note_ttype)
 
+            # handle sharing
             if note.share_status == const.SHARE_NEED_SHARE:
                 self._share_note(note)
             elif note.share_status == const.SHARE_NEED_STOP:
                 self._stop_sharing_note(note)
 
+        # commit changes to database
         self.session.commit()
 
+
+    # **************** Create Note ****************
+    #
     def _create_ttype(self, note):
         """Create ttype for note"""
         kwargs = dict(
@@ -131,6 +142,9 @@ class PushNote(BaseSync, ShareNoteMixin):
 
         return str(soup)
 
+
+    # **************** Push Note ****************
+    #
     def _push_new_note(self, note, note_ttype):
         """Push new note to remote"""
         try:
@@ -144,6 +158,9 @@ class PushNote(BaseSync, ShareNoteMixin):
         finally:
             note.action = const.ACTION_NONE
 
+
+    # **************** Create Note ****************
+    #
     def _push_changed_note(self, note, note_ttype):
         """Push changed note to remote"""
         try:
@@ -161,6 +178,9 @@ class PushNote(BaseSync, ShareNoteMixin):
         finally:
             note.action = const.ACTION_NONE
 
+
+    # **************** Delete Note ****************
+    #
     def _delete_note(self, note, note_ttype):
         """Delete note"""
         try:
