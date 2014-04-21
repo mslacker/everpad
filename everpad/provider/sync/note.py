@@ -66,6 +66,28 @@ class PushNote(BaseSync, ShareNoteMixin):
                 const.ACTION_NONE, const.ACTION_NOEXSIST, const.ACTION_CONFLICT,
             ))
         ):
+
+            # Push sequence:
+            #  
+            # Action = Create, Change, Delete  
+            #    |
+            #    |- Create - _push_new_note 
+            #    |                |
+            #    |                |-  _prepare_content
+            #    |                |
+            #    |                 -  _prepare_resources
+            #    |
+            #    |- Change - _push_changed_note
+            #    |
+            #    |- Delete - _delete_note
+            #    |
+            #    ----------- share_status
+            #                     |
+            #                     |
+            #                     |- NEED_SHARE - _share_note
+            #                     |
+            #                     |- NEED_STOP - _stop_sharing_note
+ 
             self.app.log('Pushing note "%s" to remote server.' % note.title)
             
             note_ttype = self._create_ttype(note)
@@ -92,6 +114,8 @@ class PushNote(BaseSync, ShareNoteMixin):
 
     # **************** Create Note ****************
     #
+    # note is a database note data structure
+    
     def _create_ttype(self, note):
         """Create ttype for note"""
         kwargs = dict(
