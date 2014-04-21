@@ -226,20 +226,23 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                                |         from_api
             #                          _create_conflict
             #
+ 
+            note_full_ttype = None
+            
             try:
-                note = self._update_note(note_meta_ttype)
+                note = self._update_note(note_meta_ttype, note_full_ttype)
             except NoResultFound:
-                note = self._create_note(note_meta_ttype)
+                note = self._create_note(note_meta_ttype, note_full_ttype)
 
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
             # NotesMetadataList - includeAttributes
             # set or unset sharing
-            self._check_sharing_information(note, note_meta_ttype)
+            self._check_sharing_information(note, note_full_ttype)
             
             # Here is where we get the resources
-            resource_ids = self._receive_resources(note, note_meta_ttype)
+            resource_ids = self._receive_resources(note, note_full_ttype)
             
             if resource_ids:
                 self._remove_resources(note, resource_ids)
@@ -421,7 +424,7 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # note_ttype is NotesMetadataList -> NoteMetadata.notes structure 
     # that includes metadata, see _get_all_notes
-    def _update_note(self, note_ttype):
+    def _update_note(self, note_ttype, note_full_ttype):
         """Update changed note"""
         
         # queries for note guid and returns the note if
@@ -441,16 +444,16 @@ class PullNote(BaseSync, ShareNoteMixin):
         if note.updated < note_ttype.updated:
             
             # get full note
-            note_ttype = self._get_full_note(note_ttype)
+            note_full_ttype = self._get_full_note(note_ttype)
             
             # conflict because the server note is newer than
             # the local note in addition the local note has changed            
             if note.action == const.ACTION_CHANGE:
             	 # create conflict note
-                self._create_conflict(note, note_ttype)
+                self._create_conflict(note, note_full_ttype)
             else:
                 # else update database with new sever note
-                note.from_api(note_ttype, self.session)
+                note.from_api(note_full_ttype, self.session)
         
         return note
     
@@ -461,13 +464,13 @@ class PullNote(BaseSync, ShareNoteMixin):
     # local and local has changed since last sync
     #   note = database note
     #   note_ttype = full note structure
-    def _create_conflict(self, note, note_ttype):
+    def _create_conflict(self, note, note_full_ttype):
         """Create conflict note"""
         
         # generate a new local note and populate it with
         # server note data
         conflict_note = models.Note()
-        conflict_note.from_api(note_ttype, self.session)
+        conflict_note.from_api(note_full_ttype, self.session)
         
         # set the conflict note guid as empty string
         conflict_note.guid = ''
