@@ -456,11 +456,19 @@ class PullNote(BaseSync, ShareNoteMixin):
     def _create_conflict(self, note, note_ttype):
         """Create conflict note"""
         
+        # generate a new local note and populate it with
+        # server note data
         conflict_note = models.Note()
         conflict_note.from_api(note_ttype, self.session)
+        
+        # set the conflict note guid as empty string
         conflict_note.guid = ''
+        # set status as a conflict 
         conflict_note.action = const.ACTION_CONFLICT
+        # relate the conflict and local note for reference
         conflict_note.conflict_parent_id = note.id
+        
+        # commit to database
         self.session.add(conflict_note)
         self.session.commit()
 
