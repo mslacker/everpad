@@ -193,11 +193,11 @@ class PullNote(BaseSync, ShareNoteMixin):
         # okay, so _get_all_notes uses a generator to yield each note
         # one at a time - great leap for a python dummy such as myself
         # _get_all_notes using findNotesMetadata returns NotesMetadataList
-        for note_ttype in self._get_all_notes():
+        for note_meta_ttype in self._get_all_notes():
             
             # If no title returns "Untitled note"
             self.app.log(
-                'Pulling note "%s" from remote server.' % note_ttype.title)
+                'Pulling note "%s" from remote server.' % note_meta_ttype.title)
          
             # note_ttype is a NotesMetadataList -> NoteMetadata (notes)
             # structure of the note
@@ -227,24 +227,27 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                          _create_conflict
             #
             try:
-                note = self._update_note(note_ttype)
+                note = self._update_note(note_meta_ttype)
             except NoResultFound:
-                note = self._create_note(note_ttype)
+                note = self._create_note(note_meta_ttype)
 
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
             # NotesMetadataList - includeAttributes
             # set or unset sharing
-            self._check_sharing_information(note, note_ttype)
+            self._check_sharing_information(note, note_meta_ttype)
             
             # Here is where we get the resources
-            resource_ids = self._receive_resources(note, note_ttype)
+            resource_ids = self._receive_resources(note, note_meta_ttype)
             
             if resource_ids:
                 self._remove_resources(note, resource_ids)
 
+        # commit to local database
         self.session.commit()
+
+        # remove unused notes
         self._remove_notes()
 
 
