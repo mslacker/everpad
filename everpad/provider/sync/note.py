@@ -271,13 +271,16 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                          _create_conflict
             #
             
-            note_full_ttype = ttypes.Note(guid='' )
+            # note_full_ttype = ttypes.Note(guid='' )
+            # will this crap work?
+            
             
             try:
-                note = self._update_note(note_meta_ttype, note_full_ttype)
+                note, note_full_ttype = self._update_note(note_meta_ttype)
             except NoResultFound:
-                note = self._create_note(note_meta_ttype, note_full_ttype)
+                note, note_full_ttype = self._create_note(note_meta_ttype)
 
+            self.app.log(note_meta_ttype)
             self.app.log(note_full_ttype.guid)
             
             # At this point note is the note as defind in models.py
@@ -432,7 +435,7 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # _create_note pulls ENML content of the note and stores the note data
     # in the database
-    def _create_note(self, note_meta_ttype, note_full_ttype):
+    def _create_note(self, note_meta_ttype):
         """Create new note"""
         
         # returns Types.Note with Note content, binary contents 
@@ -470,13 +473,13 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # note_ttype is NotesMetadataList -> NoteMetadata.notes structure 
     # that includes metadata, see _get_all_notes
-    def _update_note(self, note_ttype, note_full_ttype):
+    def _update_note(self, note_meta_ttype):
         """Update changed note"""
         
         # queries for note guid and returns the note if
         # exists in database - if not exists NoResultFound and return 
         note = self.session.query(models.Note).filter(
-            models.Note.guid == note_ttype.guid,
+            models.Note.guid == note_meta_ttype.guid,
         ).one()
 
         # --> note guid exists in database, check for update
@@ -487,7 +490,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # - if const.ACTION_CHANGE has also been changed local so
         #   create conflict note  
         # if in database if ! const.ACTION_CHANGE
-        if note.updated < note_ttype.updated:
+        if note.updated < note_meta_ttype.updated:
             
             # get full note
             note_full_ttype = self._get_full_note(note_ttype)
@@ -501,7 +504,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 # else update database with new sever note
                 note.from_api(note_full_ttype, self.session)
         
-        return note
+        return note, note_full_ttype
     
     
     # **************** Create Conflict ****************
