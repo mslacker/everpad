@@ -270,14 +270,16 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                                |         from_api
             #                          _create_conflict
             #
- 
-            note_full_ttype = None
+            
+            note_full_ttype = ttypes.Note(guid='' )
             
             try:
                 note = self._update_note(note_meta_ttype, note_full_ttype)
             except NoResultFound:
                 note = self._create_note(note_meta_ttype, note_full_ttype)
 
+            self.app.log(note_full_ttype.guid)
+            
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
@@ -430,7 +432,7 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # _create_note pulls ENML content of the note and stores the note data
     # in the database
-    def _create_note(self, note_meta_ttype):
+    def _create_note(self, note_meta_ttype, note_full_ttype):
         """Create new note"""
         
         # returns Types.Note with Note content, binary contents 
@@ -461,7 +463,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # Is note the models.py version at this point?
         # why yes it is - confused yet?
         # does return note signal end of yield?
-        return note
+        return note, note_full_ttype
         
 
     # **************** Update Note****************
