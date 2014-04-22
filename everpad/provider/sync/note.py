@@ -12,9 +12,7 @@ import time
 import binascii
 
 
-
 # ****** Note:  BaseSync - Base class for sync - base.py
-
 
 # *************************************************
 # **************** ShareNoteMixin  ****************
@@ -271,10 +269,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                          _create_conflict
             #
             
+            
             # note_full_ttype = ttypes.Note(guid='' )
             # will this crap work?
-            
-            
             try:
                 note, note_full_ttype = self._update_note(note_meta_ttype)
             except NoResultFound:
@@ -307,6 +304,7 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     def _get_all_notes(self):
         """Iterate all notes"""
+        
         self.app.log("get_all_notes")
         offset = 0
 
@@ -341,6 +339,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                         includeLargestResourceSize=True,
                     )
                 )
+            # if a rate limit happens because of findNotesMetadata
             except EDAMSystemException, e:
                 if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                     self.app.log(
@@ -358,11 +357,11 @@ class PullNote(BaseSync, ShareNoteMixin):
             # inc offset: okay, since we start from offset 0 then startIndex
             # should be 0 on first pass then add len(note_list.notes) which
             # should be total number of notes we grab with the findNotesMetadata
-            # call, so offset will be our max notes here
+            # call, so offset will be our max notes grabbed this pass
             offset = note_list.startIndex + len(note_list.notes)
             
             # this will be zero if all the notes were received from the 
-            # findNotesMetadata
+            # findNotesMetadata (totalNotes)
             # I guess because API:
             # "The service will return a set of notes that is no larger than this number, 
             # but may return fewer notes if needed. The NoteList.totalNotes field in the 
