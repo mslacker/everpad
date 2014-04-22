@@ -347,8 +347,6 @@ class PullNote(BaseSync, ShareNoteMixin):
                         "Rate limit in note_list: %d seconds" % e.rateLimitDuration)
                     break
 
-            self.app.log("Total notes %d" % note_list.totalNotes)
-            
             # https://www.jeffknupp.com/blog/2013/04/07/
             #       improve-your-python-yield-and-generators-explained/
             # https://wiki.python.org/moin/Generators
