@@ -193,11 +193,17 @@ class SyncThread(QtCore.QThread):
     # This is the main loop of the thread
     def run(self):
         """Run thread"""
+        
+        # Fixed an issue here.  If provider is started while the server
+        # is not responding due to a Rate Limit then _init_network errors
+        # and causes a hang.  I can handle this but I want _init_sync
+        # complete before _init_network, so I swapped the execution order to
+        # _init_db, _init_sync, _init_network
+        # 
         self._init_db()         # setup database
+        self._init_sync()       # setup Sync table times
         self._init_network()    # get evernote info
-        self._init_sync()       # setup Sync table times 
-        
-        
+
         # Deprecated since version 2.6: 
         # The mutex module has been removed in Python 3.
         while True:
