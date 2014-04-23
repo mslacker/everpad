@@ -92,8 +92,10 @@ class ProviderServiceQObject(QObject):
     terminate = Signal()
 
 # ********** DBUS Services/API *********
-#
-#
+# dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+# in daemon.py
+# Ref: http://dbus.freedesktop.org/doc/dbus-python/doc/tutorial.html#setting-up-an-event-loop
+
 class ProviderService(dbus.service.Object):
     """DBus service for provider"""
 
@@ -115,12 +117,14 @@ class ProviderService(dbus.service.Object):
             self._sq = self.session.query
         return self._sq
 
+
+    #*** dbus get note by note id
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature=btype.Note.signature,
     )
     def get_note(self, id):
-        """Get nite by id"""
+        """Get note by id"""
         try:
             note = self.session.query(models.Note).filter(
                 (models.Note.id == id)
@@ -131,6 +135,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('models.Note not found')
 
+    #*** dbus get note by note guid
     @dbus.service.method(
         "com.everpad.Provider", in_signature='s',
         out_signature=btype.Note.signature,
@@ -147,6 +152,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Note not found')
 
+    #*** dbus get note conflict
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='a{}'.format(btype.Note.signature),
@@ -158,6 +164,7 @@ class ProviderService(dbus.service.Object):
         ).all()
         return btype.Note.list >> notes
 
+    #*** dbus find note
     @dbus.service.method(
         "com.everpad.Provider", in_signature='saiaiiiii',
         out_signature='a{}'.format(btype.Note.signature),
@@ -180,6 +187,7 @@ class ProviderService(dbus.service.Object):
 
         return notes
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='a{}'.format(btype.Notebook.signature),
@@ -192,6 +200,7 @@ class ProviderService(dbus.service.Object):
 
         return btype.Notebook.list >> notebooks
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature=btype.Notebook.signature,
@@ -208,6 +217,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Notebook does not exist')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='i',
@@ -219,6 +229,7 @@ class ProviderService(dbus.service.Object):
             & ~models.Note.action.in_(const.DISABLED_ACTIONS)
         ).count()
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Notebook.signature,
         out_signature=btype.Notebook.signature,
@@ -251,6 +262,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Notebook does not exist')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='b',
@@ -268,6 +280,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Notebook does not exist')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='a{}'.format(btype.Tag.signature),
@@ -280,6 +293,7 @@ class ProviderService(dbus.service.Object):
 
         return btype.Tag.list >> tags
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='i',
@@ -291,6 +305,7 @@ class ProviderService(dbus.service.Object):
             & ~models.Note.action.in_(const.DISABLED_ACTIONS)
         ).count()
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='b',
@@ -316,6 +331,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Tag does not exist')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Tag.signature,
         out_signature=btype.Tag.signature,
@@ -345,7 +361,8 @@ class ProviderService(dbus.service.Object):
             return btype.Tag >> tag
         except NoResultFound:
             raise DBusException('Tag does not exist')
-
+    
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature=btype.Note.signature,
@@ -368,7 +385,8 @@ class ProviderService(dbus.service.Object):
         self.data_changed()
 
         return btype.Note >> note
-
+        
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature=btype.Note.signature,
@@ -399,6 +417,7 @@ class ProviderService(dbus.service.Object):
 
         return btype.Note >> note
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='a{}'.format(btype.Resource.signature),
@@ -412,6 +431,7 @@ class ProviderService(dbus.service.Object):
 
         return btype.Resource.list >> resources
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='ia{}'.format(btype.Resource.signature),
@@ -446,6 +466,7 @@ class ProviderService(dbus.service.Object):
         self.data_changed()
         return btype.Note >> note
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='i', out_signature='b',
@@ -472,6 +493,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('models.Note not found')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='ss',
@@ -495,6 +517,7 @@ class ProviderService(dbus.service.Object):
         self.data_changed()
         return btype.Notebook >> notebook
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='s', out_signature='',
@@ -507,6 +530,7 @@ class ProviderService(dbus.service.Object):
             self.app.sync_thread.force_sync()
         self.data_changed()
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='',
@@ -516,6 +540,7 @@ class ProviderService(dbus.service.Object):
         self.qobject.remove_authenticate_signal.emit()
         self.data_changed()
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='b',
@@ -524,6 +549,7 @@ class ProviderService(dbus.service.Object):
         """Check is client authenticated"""
         return bool(get_auth_token())
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='a%s' % btype.Place.signature,
@@ -533,6 +559,7 @@ class ProviderService(dbus.service.Object):
         places = self.session.query(models.Place).all()
         return btype.Place.list >> places
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='i', out_signature='',
@@ -550,6 +577,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('models.Note not found')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='i', out_signature=''
@@ -568,6 +596,7 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('models.Note not found')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='i',
@@ -576,6 +605,7 @@ class ProviderService(dbus.service.Object):
         """Get sync status"""
         return self.app.sync_thread.status
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='s',
@@ -584,6 +614,7 @@ class ProviderService(dbus.service.Object):
         """Get last sync date"""
         return self.app.sync_thread.last_sync.strftime('%H:%M')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='',
@@ -594,6 +625,7 @@ class ProviderService(dbus.service.Object):
             self.app.sync_thread.force_sync()
         return
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='i', out_signature='',
@@ -603,6 +635,7 @@ class ProviderService(dbus.service.Object):
         self.app.settings.setValue('sync_delay', str(delay))
         self.app.sync_thread.update_timer()
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider",
         in_signature='', out_signature='i',
@@ -612,6 +645,7 @@ class ProviderService(dbus.service.Object):
         return int(self.app.settings.value('sync_delay') or 0)\
             or const.DEFAULT_SYNC_DELAY
 
+    #*** dbus ?????
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='b',
@@ -623,6 +657,7 @@ class ProviderService(dbus.service.Object):
             & (models.Notebook.default == True)
         ).count())
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='i',
@@ -631,6 +666,7 @@ class ProviderService(dbus.service.Object):
         """Get api version"""
         return const.API_VERSION
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='s',
         out_signature='s',
@@ -639,6 +675,7 @@ class ProviderService(dbus.service.Object):
         """Get settings value"""
         return self.app.settings.value(name, '')
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='ss',
         out_signature='',
@@ -649,6 +686,7 @@ class ProviderService(dbus.service.Object):
         self.settings_changed(name, value)
         return
 
+    #*** dbus
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
     )
@@ -657,6 +695,7 @@ class ProviderService(dbus.service.Object):
         self.qobject.terminate.emit()
         return
 
+    #*** dbus
     @dbus.service.signal(
         'com.everpad.provider', signature='i',
     )
@@ -664,6 +703,7 @@ class ProviderService(dbus.service.Object):
         """Emit when sync state changed"""
         return
 
+    #*** dbus
     @dbus.service.signal(
         'com.everpad.provider', signature='',
     )
@@ -671,6 +711,7 @@ class ProviderService(dbus.service.Object):
         """Emit when data changed"""
         return
 
+    #*** dbus
     @dbus.service.signal(
         'com.everpad.provider', signature='ss',
     )
