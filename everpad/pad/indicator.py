@@ -113,8 +113,17 @@ class Indicator(QSystemTrayIcon):
             first_sync = not (
                 has_notes or len(pin_notes) or self.app.provider.is_first_synced()
             )
-            status_syncing = self.app.provider.get_status() == STATUS_SYNC
-            if status_syncing and first_sync:
+            
+            # Rate Limit indication added
+            # STATUS_RATE = -1  # Rate Limit status
+            # STATUS_NONE = 0
+            # STATUS_SYNC = 1
+            # status_syncing = self.app.provider.get_status() == STATUS_SYNC
+            status_syncing = self.app.provider.get_status()
+            
+            if status_syncing < 0:
+                sync_label = self.tr('Rate Limit')            
+            elif status_syncing and first_sync:
                 sync_label = self.tr('Wait, first sync in progress')
             elif status_syncing and not first_sync:
                 sync_label = self.tr('Sync in progress')
@@ -131,6 +140,7 @@ class Indicator(QSystemTrayIcon):
                     sync_label = self.tr('Last Sync: %s min ago') % delta_sync
                 else:
                     sync_label = self.tr('Last Sync: %s mins ago') % delta_sync
+            
             menu_items = {
                 'create_note': [self.tr('Create Note'), self.create],
                 'all_notes': [self.tr('All Notes'), self.show_all_notes],
