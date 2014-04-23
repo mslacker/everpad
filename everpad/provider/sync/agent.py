@@ -128,6 +128,10 @@ class SyncThread(QtCore.QThread):
                 self.note_store = tools.get_note_store(self.auth_token)
                 self.user_store = tools.get_user_store(self.auth_token)
                 break
+            except EDAMSystemException, e:
+                if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                    self.app.log("Rate limit _init_network: %d minutes - sleeping" % (e.rateLimitDuration/60))
+                    time.sleep(e.rateLimitDuration)
             except socket.error:
                 time.sleep(30)
                 
