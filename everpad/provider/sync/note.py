@@ -495,6 +495,12 @@ class PullNote(BaseSync, ShareNoteMixin):
                 # else update database with new sever note
                 note.from_api(note_full_ttype, self.session)
         
+        else:
+            # okay, hope this works.  If no update or conflict then,
+            # I believe, the query returned an error, but note_full_ttype
+            # needs to be set to None for the return
+            note_full_ttype = None
+        
         return note, note_full_ttype
     
     
