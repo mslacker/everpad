@@ -37,8 +37,18 @@ class Note(Base):
     guid = Column(String)
     title = Column(String)
     content = Column(String)
+    
+    # MKG added for playing
+    contentHash = Column(String)   
+    contentLength = Column(Integer)
+    
     created = Column(Integer)
     updated = Column(Integer)
+    
+    
+    #deleted
+    #active
+    
     updated_local = Column(Integer)
     notebook_id = Column(Integer, ForeignKey('notebooks.id'))
     notebook = relationship("Notebook", backref='note')
