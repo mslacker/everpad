@@ -269,17 +269,11 @@ class PullNote(BaseSync, ShareNoteMixin):
             #                          _create_conflict
             #
             
-            
-            # note_full_ttype = ttypes.Note(guid='' )
-            # will this crap work?
             try:
                 note, note_full_ttype = self._update_note(note_meta_ttype)
             except NoResultFound:
                 note, note_full_ttype = self._create_note(note_meta_ttype)
 
-            self.app.log(note_meta_ttype)
-            self.app.log(note_full_ttype.guid)
-            
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
 
@@ -561,15 +555,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # Update note resources in database and download or delete
         # actual binary data?  See resource.from_api in models.py
         
-        if note_ttype.largestResourceSize:
-            self.app.log("Has resource")
-            return
-        else:
-            self.app.log("No resource")
-            return        	
-        
-        # So WTH is the [] for? Need to figure that one
-        # Anyway, try: looks in database for the resource guid, if
+        # try: looks in database for the resource guid, if
         # not found fall though to except.  If in the database, append to the 
         # list and check hash to verify the existing resource.  If the resource
         # has changed then update database --- !!! I also need to download it again !!!!
