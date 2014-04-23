@@ -130,7 +130,13 @@ class SyncThread(QtCore.QThread):
                 break
             except EDAMSystemException, e:
                 if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
-                    self.app.log("Rate limit _init_network: %d minutes - sleeping" % (e.rateLimitDuration/60))
+                    self.app.log(
+                        "Rate limit _init_network: %d minutes - sleeping" % 
+                        (e.rateLimitDuration/60)
+                    )
+                    self.status = STATUS_RATE
+                    # nothing I can think of doing other than sleeping here
+                    # until the rate limit clears
                     time.sleep(e.rateLimitDuration)
             except socket.error:
                 time.sleep(30)
