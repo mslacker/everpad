@@ -9,7 +9,7 @@ from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
 from everpad.const import (
-    STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
+    STATUS_RATE, STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
     SYNC_STATE_FINISH, API_VERSION,
     DEFAULT_INDICATOR_LAYOUT,
 )
