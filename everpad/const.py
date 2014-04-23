@@ -7,7 +7,7 @@ HOST = 'www.evernote.com'
 
 STATUS_NONE = 0
 STATUS_SYNC = 1
-STATUS_RATE = 3  # Rate Limit status
+STATUS_RATE = 2  # Rate Limit status
 
 DEFAULT_SYNC_DELAY = 30000 * 60
 SYNC_STATE_START = 0
