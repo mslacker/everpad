@@ -134,10 +134,11 @@ class SyncThread(QtCore.QThread):
                         "Rate limit _init_network: %d minutes - sleeping" % 
                         (e.rateLimitDuration/60)
                     )
-                    self.status = STATUS_RATE
+                    self.status = const.STATUS_RATE
                     # nothing I can think of doing other than sleeping here
                     # until the rate limit clears
                     time.sleep(e.rateLimitDuration)
+                    self.status = const.STATUS_NONE
             except socket.error:
                 time.sleep(30)
                 
