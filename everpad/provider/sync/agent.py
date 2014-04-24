@@ -251,6 +251,8 @@ class SyncThread(QtCore.QThread):
         # if Rate 
         self.status = const.STATUS_SYNC
         
+        #@@@@ don't set until complete !!!  last_sync
+        
         # get date/time to set new late sync value
         self.last_sync = datetime.now()
 
