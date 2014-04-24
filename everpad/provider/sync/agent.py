@@ -348,7 +348,9 @@ class SyncThread(QtCore.QThread):
         # true if an update and false if no update needed
         reason = update_count != self.sync_state.update_count
         
-        # self.sync_state.update_count = update_count
+        #@@@@ okay --- work here do I really want to update before I'm done?
+        
+        # self.sync_state.update_count = update_count -- temp:
         self.sync_state.update_count = 1
         return reason
 
