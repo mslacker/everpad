@@ -217,6 +217,11 @@ class SyncThread(QtCore.QThread):
         self._init_db()         # setup database
         self._init_sync()       # setup Sync table times
         self._init_network()    # get evernote info
+        
+        
+        # @@@@ I want to do some other start up checks/calls here
+        # ie ... is this a virgin/do I need a full sync (offset) ...
+        
 
         # Deprecated since version 2.6: 
         # The mutex module has been removed in Python 3.
