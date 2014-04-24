@@ -10,6 +10,13 @@ import time
 import traceback
 import socket
 
+"""
+    Rate Limit handling:
+    	1. If provider starts in a Rate Limit period, it will be caught 
+    	   at _init_network. A sleep command will execute and indicator 
+    	   will display Rate Limit.
+"""
+
 
 # ********** SyncThread **********
 # 
@@ -235,6 +242,8 @@ class SyncThread(QtCore.QThread):
         self.app.log("Performing sync perform( )")
         
         # set status to sync
+        
+        # if Rate 
         self.status = const.STATUS_SYNC
         
         # get date/time to set new late sync value
@@ -283,7 +292,6 @@ class SyncThread(QtCore.QThread):
         self.app.log("Sync performed.")
 
 
-
     def _need_to_update(self):
         """Check need for update notes"""
         self.app.log('Checking need for update notes.')
@@ -301,10 +309,17 @@ class SyncThread(QtCore.QThread):
                 self.auth_token).updateCount
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
-                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
-                self.sync_state.rate_limit = e.rateLimitDuration
-                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
-                return False
+                self.app.log(
+                    "Rate limit _need_to_update: %d minutes - sleeping" % 
+                        (e.rateLimitDuration/60)
+                )
+                self.status = const.STATUS_RATE
+                # nothing I can think of doing other than sleeping here
+                # until the rate limit clears and retry
+                time.sleep(e.rateLimitDuration)
+                self.status = const.STATUS_SYNC
+                update_count = self.note_store.getSyncState(
+                    self.auth_token).updateCount
         except socket.error, e:
             # MKG: I want to track connect errors
             self.sync_state.connect_error_count+=1
@@ -327,7 +342,6 @@ class SyncThread(QtCore.QThread):
 
         # true if an update and false if no update needed
         reason = update_count != self.sync_state.update_count
-
         
         # self.sync_state.update_count = update_count
         self.sync_state.update_count = 1

@@ -273,20 +273,26 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note, note_full_ttype = self._update_note(note_meta_ttype)
             except NoResultFound:
                 note, note_full_ttype = self._create_note(note_meta_ttype)
+                
+            self.app.log(note_meta_ttype.guid)
+            self.app.log(note_full_ttype.guid)
 
+            
             # At this point note is the note as defind in models.py
             self._exists.append(note.id)
-
+            
             # NotesMetadataList - includeAttributes
             # set or unset sharing
-            self._check_sharing_information(note, note_full_ttype)
-            
+            self._check_sharing_information(note, note_meta_ttype)
+            	            
             # Here is where we get the resources
-            resource_ids = self._receive_resources(note, note_full_ttype)
+            resource_ids = self._receive_resources(note, note_meta_ttype, note_full_ttype)
             
             if resource_ids:
-                self._remove_resources(note, resource_ids)
+                 self._remove_resources(note, resource_ids)
 
+        #@@@@ end of for note_meta_ttype in self._get_all_note        
+        
         # commit to local database
         self.session.commit()
 
@@ -337,7 +343,9 @@ class PullNote(BaseSync, ShareNoteMixin):
             except EDAMSystemException, e:
                 if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
                     self.app.log(
-                        "Rate limit in note_list: %d seconds" % e.rateLimitDuration)
+                        "Rate limit in _get_all_notes: %d minutes" % 
+                            (e.rateLimitDuration/60)
+                    )
                     break
 
             # https://www.jeffknupp.com/blog/2013/04/07/
@@ -383,11 +391,21 @@ class PullNote(BaseSync, ShareNoteMixin):
         # NOTE!!! service will include the meta-data for each 
         # resource in the note, but the binary contents of the resources 
         # and their recognition data will be omitted
-        return self.note_store.getNote(
-            self.auth_token, note_ttype.guid,
-            True, True, True, True,
-        )
-        #### !!!! need rate limit crap here
+        try:
+            note_full_ttype = self.note_store.getNote(
+                self.auth_token, note_ttype.guid,
+                True, True, True, True,
+            )
+        except EDAMSystemException, e:
+            if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
+                self.app.log(
+                    "Rate limit _get_full_note: %d minutes" % 
+                        (e.rateLimitDuration/60)
+                )
+                self.sync_state.rate_limit = e.rateLimitDuration        
+        
+        return note_full_ttype
+
 
     # **************** Get Resource Data ****************
     #
@@ -402,16 +420,16 @@ class PullNote(BaseSync, ShareNoteMixin):
         #         string authenticationToken,
         #         Types.Guid guid)
         
-        self.app.log("Resource binary %s." % resource.file_path)
-        
         try:
             data_body = self.note_store.getResourceData(
                 self.auth_token, resource.guid)
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
-                self.app.log("Rate limit reached: %d seconds" % e.rateLimitDuration)
+                self.app.log(
+                    "Rate limit _get_resource_data: %d minutes" % 
+                        (e.rateLimitDuration/60)
+                )
                 self.sync_state.rate_limit = e.rateLimitDuration
-                self.sync_state.rate_limit_time = datetime.now() + datetime.timedelta(seconds=e.rateLimitDuration)
                 return
 
         with open(resource.file_path, 'w') as data:
@@ -447,10 +465,6 @@ class PullNote(BaseSync, ShareNoteMixin):
         
         # ... commit note data
         self.session.add(note)
-        
-        #
-        # *********use note_full_ttype to get resources here
-        # !!!!!!!!!!!!!
         
         self.session.commit()
        
@@ -552,11 +566,16 @@ class PullNote(BaseSync, ShareNoteMixin):
     #
     # note is the note as defind in models.py
     # note_ttype == Types.Note
-    def _receive_resources(self, note, note_ttype):
+    def _receive_resources(self, note, note_meta_ttype, note_full_ttype):
         """Receive note resources"""
 
         # empty resource id list        
         resources_ids = []
+        
+        # !!!!! need work here        
+        if note_meta_ttype.largestResourceSize or note_full_ttype == None:
+            # get full note
+            note_full_ttype = self._get_full_note(note_meta_ttype)
 
         # Update note resources in database and download or delete
         # actual binary data?  See resource.from_api in models.py
@@ -566,7 +585,7 @@ class PullNote(BaseSync, ShareNoteMixin):
         # list and check hash to verify the existing resource.  If the resource
         # has changed then update database --- !!! I also need to download it again !!!!
         # The except handles resources that do not exist.  
-        for resource_ttype in note_ttype.resources or []:
+        for resource_ttype in note_full_ttype.resources or []:
             try:
                 # Is the resource in the database? If not then except NoResultFound  
                 resource = self.session.query(models.Resource).filter(
