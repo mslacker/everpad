@@ -12,9 +12,14 @@ import socket
 
 """
     Rate Limit handling:
-    	1. If provider starts in a Rate Limit period, it will be caught 
-    	   at _init_network. A sleep command will execute and indicator 
-    	   will display Rate Limit.
+        If provider starts in a Rate Limit period, it will be caught 
+    	at _init_network. A sleep command will execute and indicator 
+    	will display Rate Limit.  There is really nothing else to do
+    	but sleep at that point.
+    	
+    	
+    	
+    	 
 """
 
 
@@ -286,10 +291,16 @@ class SyncThread(QtCore.QThread):
             if need_to_update:
                 self.remote_changes()
             self.local_changes()
+            
+            # if we get a good finish - update the count to match server
+            self.sync_state.update_count = self.sync_state.srv_update_count
+            
         except Exception, e:  # maybe log this
+            self.app.log("perform error")
             self.session.rollback()
             self._init_db()
             self.app.log(e)
+        
         finally:
             self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
             self.status = const.STATUS_NONE
@@ -312,7 +323,7 @@ class SyncThread(QtCore.QThread):
         # generated. If updateCount and chunkHighUSN are identical, that means 
         # that this is the last chunk in the account ... there is no more recent information. 
         try:
-            update_count = self.note_store.getSyncState(
+            self.sync_state.srv_update_count = self.note_store.getSyncState(
                 self.auth_token).updateCount
         except EDAMSystemException, e:
             if e.errorCode == EDAMErrorCode.RATE_LIMIT_REACHED:
@@ -345,15 +356,15 @@ class SyncThread(QtCore.QThread):
         #XXX: matsubara probably innefficient as it does a SQL each time it
         # accesses the update_count attr?
         self.app.log("Local account updates count:  %s" % self.sync_state.update_count)
-        self.app.log("Remote account updates count: %s" % update_count)
+        self.app.log("Remote account updates count: %s" % self.sync_state.srv_update_count)
 
         # true if an update and false if no update needed
-        reason = update_count != self.sync_state.update_count
+        reason = self.sync_state.srv_update_count != self.sync_state.update_count
         
-        #@@@@ okay --- work here do I really want to update before I'm done?
-        
+        #@@@@ MOVED okay --- work here do I really want to update before I'm done?
         # self.sync_state.update_count = update_count -- temp:
-        self.sync_state.update_count = 1
+        # self.sync_state.update_count = 1
+
         return reason
 
     
