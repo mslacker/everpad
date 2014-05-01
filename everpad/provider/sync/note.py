@@ -1,4 +1,8 @@
-from BeautifulSoup import BeautifulSoup
+from ipdb import set_trace as tr
+try:
+    from BeautifulSoup import BeautifulSoup
+except:
+    from bs4 import BeautifulSoup
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import sanitize
 from evernote.edam.error.ttypes import EDAMUserException, EDAMSystemException, EDAMErrorCode
@@ -157,10 +161,15 @@ class PushNote(BaseSync, ShareNoteMixin):
         """.format(sanitize(
             html=content[:limits.EDAM_NOTE_CONTENT_LEN_MAX]
         ))).strip().encode('utf8')
-
-        soup = BeautifulSoup(enml_content, selfClosingTags=[
-            'img', 'en-todo', 'en-media', 'br', 'hr',
-        ])
+        if BeautifulSoup.__module__ == 'bs4':
+            soup = BeautifulSoup(enml_content, 'xml', selfClosingTags=[
+                'img', 'en-todo', 'en-media', 'br', 'hr',
+            ])
+        else:
+            # TODO: maybe possible use the same code that bs4
+            soup = BeautifulSoup(enml_content, selfClosingTags=[
+                'img', 'en-todo', 'en-media', 'br', 'hr',
+            ])
 
         return str(soup)
 

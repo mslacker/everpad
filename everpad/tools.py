@@ -1,5 +1,8 @@
 from functools import wraps, partial
-from BeautifulSoup import BeautifulSoup
+try:
+    from BeautifulSoup import BeautifulSoup
+except:
+    from bs4 import BeautifulSoup
 from HTMLParser import HTMLParser
 from everpad.const import API_VERSION, SCHEMA_VERSION, VERSION
 import dbus

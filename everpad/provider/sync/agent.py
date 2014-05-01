@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from evernote.edam.error.ttypes import EDAMUserException, EDAMSystemException, EDAMErrorCode
 from PySide import QtCore
 from datetime import datetime

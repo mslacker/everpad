@@ -15,7 +15,12 @@ from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
 from everpad.tools import sanitize, clean, html_unescape, resource_filename
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
-from BeautifulSoup import BeautifulSoup, Tag
+try:
+    from BeautifulSoup import BeautifulSoup
+except:
+    from bs4 import BeautifulSoup, Tag
+    from bs4.builder import HTMLTreeBuilder
+    builder = HTMLTreeBuilder()
 from functools import partial
 from copy import copy
 import webbrowser
@@ -257,7 +262,11 @@ class ContentEdit(QObject):
                     media['title'] = res.file_name
                     res.in_content = True
                     # wrap in link to make clickable
-                    tag = Tag(soup, "a", [("href", 'file://%s' % res.file_path)])
+                    if BeautifulSoup.__module__ == 'bs4':
+                        # support BeautifulSoup ver. 4
+                        tag = Tag(soup, builder, "a", attrs={"href": 'file://%s' % res.file_path})
+                    else:
+                        tag = Tag(soup, "a", [("href", 'file://%s' % res.file_path)])
                     media.replaceWith(tag)
                     tag.insert(0, media)
                 else:
