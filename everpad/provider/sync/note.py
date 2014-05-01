@@ -282,9 +282,6 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note, note_full_ttype = self._update_note(note_meta_ttype)
             except NoResultFound:
                 note, note_full_ttype = self._create_note(note_meta_ttype)
-                
-            self.app.log(note_meta_ttype.guid)
-            self.app.log(note_full_ttype.guid)
 
             
             # At this point note is the note as defind in models.py
