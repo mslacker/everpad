@@ -504,8 +504,8 @@ class PullNote(BaseSync, ShareNoteMixin):
         if note.updated < note_meta_ttype.updated:
             
             # get full note
-            note_full_ttype = self._get_full_note(note_ttype)
-            
+            note_full_ttype = self._get_full_note(note_meta_ttype)
+
             # conflict because the server note is newer than
             # the local note in addition the local note has changed            
             if note.action == const.ACTION_CHANGE:
